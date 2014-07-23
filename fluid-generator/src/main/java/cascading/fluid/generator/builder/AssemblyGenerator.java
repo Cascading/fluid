@@ -25,9 +25,11 @@ import cascading.pipe.Every;
 import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
+import unquietcode.tools.flapi.ClassReference;
 import unquietcode.tools.flapi.Descriptor;
-import unquietcode.tools.flapi.builder.Block.BlockBuilder;
-import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder_m1_m4_m5;
+import unquietcode.tools.flapi.builder.Block.BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f;
+import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f;
+import unquietcode.tools.flapi.builder.Method.MethodBuilder_2m12_4f_2m13_4f_2m14_4f_2m15_4f_2m16_4f_2m17_4f_2m18_4f;
 
 /**
  *
@@ -40,7 +42,7 @@ public class AssemblyGenerator extends Generator
 
   public void createAssemblyBuilder( String targetPath )
     {
-    DescriptorBuilder_m1_m4_m5<Void> builder = getBuilder()
+    DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder = getBuilder()
       .setPackage( "cascading.fluid.api.assembly" )
       .setDescriptorName( "Assembly" )
       .setStartingMethodName( "startAssembly" );
@@ -54,21 +56,21 @@ public class AssemblyGenerator extends Generator
     writeBuilder( targetPath, build );
     }
 
-  private DescriptorBuilder_m1_m4_m5<Void> addBranchBlock( DescriptorBuilder_m1_m4_m5<Void> builder )
+  private DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> addBranchBlock( DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder )
     {
-    BlockBuilder<DescriptorBuilder_m1_m4_m5<Void>> branch = builder.startBlock( "Branch", "startBranch(String name)" ).any();
+    BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>> branch = builder.startBlock( "Branch", "startBranch(String name)" ).any();
 
-    branch = (BlockBuilder<DescriptorBuilder_m1_m4_m5<Void>>) addSubTypeBlocks( branch, SubAssembly.class, false, Pipe.class );
+    branch = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>) addSubTypeBlocks( branch, SubAssembly.class, false, Pipe.class );
 
     branch = branch
       .addMethod( "pipe(String name)" ).any()
       .addMethod( "pipe(String name, cascading.pipe.Pipe previous )" ).any();
 
-    branch = branch
+     branch = branch
       .startBlock( "Each", "each(cascading.tuple.Fields argumentSelector)" )
       .addAnnotation( METHOD_ANNOTATION )
-      .withClassParam( "factory" ).havingValue( PIPE_FACTORY )
-      .withClassParam( "creates" ).havingValue( Each.class )
+      .withParameter( "factory", new ClassReference( PIPE_FACTORY ) )
+      .withParameter( "creates", Each.class )
       .finish()
       .any( EACH )
 
@@ -82,16 +84,16 @@ public class AssemblyGenerator extends Generator
     branch = branch
       .startBlock( "GroupBy", "groupBy(cascading.tuple.Fields groupFields)" )
       .addAnnotation( METHOD_ANNOTATION )
-      .withClassParam( "factory" ).havingValue( PIPE_FACTORY )
-      .withClassParam( "creates" ).havingValue( GroupBy.class )
-      .withParam( "createOnNext" ).havingValue( true )
+      .withParameter( "factory", new ClassReference( PIPE_FACTORY ) )
+      .withParameter( "creates", GroupBy.class )
+      .withParameter( "createOnNext", true )
       .finish()
       .any( GROUP )
 
       .startBlock( "Every", "every(cascading.tuple.Fields argumentSelector)" )//.after( GROUP )
       .addAnnotation( METHOD_ANNOTATION )
-      .withClassParam( "factory" ).havingValue( PIPE_FACTORY )
-      .withClassParam( "creates" ).havingValue( Every.class )
+      .withParameter( "factory", new ClassReference( PIPE_FACTORY ) )
+      .withParameter( "creates", Every.class )
       .finish()
       .any( EVERY )
 

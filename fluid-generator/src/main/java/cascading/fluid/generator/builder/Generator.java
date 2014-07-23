@@ -40,12 +40,13 @@ import org.jgrapht.traverse.DepthFirstIterator;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import unquietcode.tools.flapi.ClassReference;
 import unquietcode.tools.flapi.Descriptor;
 import unquietcode.tools.flapi.Flapi;
-import unquietcode.tools.flapi.builder.Block.BlockBuilder;
+import unquietcode.tools.flapi.builder.Block.BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f;
 import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder;
-import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder_m1_m4_m5;
-import unquietcode.tools.flapi.builder.Method.MethodBuilder_m7_m8_m9_m10_m11;
+import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f;
+import unquietcode.tools.flapi.builder.Method.MethodBuilder_2m12_4f_2m13_4f_2m14_4f_2m15_4f_2m16_4f_2m17_4f_2m18_4f;
 import unquietcode.tools.flapi.runtime.MethodLogger;
 
 import static cascading.fluid.generator.util.ParameterGraphs.BEGIN;
@@ -83,7 +84,7 @@ public abstract class Generator
     build.writeToFolder( targetPath );
     }
 
-  protected DescriptorBuilder.$<Void> getBuilder()
+  protected DescriptorBuilder.Start getBuilder()
     {
     if( LOG.isDebugEnabled() )
       return Flapi.builder( methodLogger );
@@ -93,25 +94,19 @@ public abstract class Generator
 
   protected abstract String getFactoryClass();
 
-//  protected <T> BlockBuilder addBuilderBlock( BlockBuilder<DescriptorBuilder_m1_m4_m5<Void>> builder, Class<T> type, final boolean isFactory, int group )
-//    {
-//    String typeName = type.getSimpleName();
-//    MethodBuilder_m7_m8_m9_m10_m11 tmp1 = builder.startBlock( typeName, Text.toFirstLower( typeName ) + "()" );
-//    BlockBuilder block = (BlockBuilder) ( isFactory ? tmp1.last() : tmp1.after( group ).last() );
-//
-//    return (BlockBuilder) addSubTypeBlocks( block, type, isFactory );
-//    }
-
-  protected <T> DescriptorBuilder_m1_m4_m5 addBuilderBlock( DescriptorBuilder_m1_m4_m5 builder, Class<T> type, final boolean isFactory, int group )
+  protected <T> DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> addBuilderBlock( DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder, Class<T> type, final boolean isFactory, int group )
     {
     String typeName = type.getSimpleName();
-    MethodBuilder_m7_m8_m9_m10_m11 tmp1 = builder.startBlock( typeName, Text.toFirstLower( typeName ) + "()" );
-    BlockBuilder block = (BlockBuilder) ( isFactory ? tmp1.last() : tmp1.after( group ).last() );
+    MethodBuilder_2m12_4f_2m13_4f_2m14_4f_2m15_4f_2m16_4f_2m17_4f_2m18_4f tmp1 = builder
+      .startBlock( typeName, Text.toFirstLower( typeName ) + "()" );
 
-    return (DescriptorBuilder_m1_m4_m5) addSubTypeBlocks( block, type, isFactory ).endBlock();
+    BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) ( isFactory ? tmp1.last() : tmp1.after( group ).last() );
+
+    return (DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>) addSubTypeBlocks( block, type, isFactory )
+      .endBlock();
     }
 
-  protected <T> BlockBuilder addSubTypeBlocks( BlockBuilder block, Class<T> type, final boolean isFactory, Class... startAfter )
+  protected <T> BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f addSubTypeBlocks( BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block, Class<T> type, final boolean isFactory, Class... startAfter )
     {
     Map<Class<? extends T>, Set<Constructor>> constructorMap = Types.getAllInstantiable( reflections, type );
 
@@ -123,14 +118,17 @@ public abstract class Generator
 
       final String operationName = subType.getSimpleName();
       String methodName = isFactory ? operationName : Text.toFirstLower( operationName ); // Factory methods have upper first letter
-      MethodBuilder_m7_m8_m9_m10_m11 tmp = block.startBlock( operationName, methodName + "()" );
 
-      block = (BlockBuilder) ( (MethodBuilder_m7_m8_m9_m10_m11<DescriptorBuilder_m1_m4_m5>) tmp ).addAnnotation( METHOD_ANNOTATION )
-        .withClassParam( "factory" ).havingValue( getFactoryClass() )
-        .withClassParam( "creates" ).havingValue( subType )
-        .finish().last();
+      MethodBuilder_2m12_4f_2m13_4f_2m14_4f_2m15_4f_2m16_4f_2m17_4f_2m18_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>> tmp = block.startBlock( operationName, methodName + "()" );
 
-      final BlockBuilder[] blockBuilder = {
+      block = tmp.
+        addAnnotation( METHOD_ANNOTATION )
+        .withParameter( "factory", new ClassReference( getFactoryClass() ) )
+        .withParameter( "creates", subType )
+        .finish()
+        .last();
+
+      final BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f[] blockBuilder = {
         block
       };
 
@@ -164,7 +162,7 @@ public abstract class Generator
 
         if( hasTerminalPath && isFactory )
           {
-          blockBuilder[ 0 ] = (BlockBuilder) ( (BlockBuilder<BlockBuilder<DescriptorBuilder_m1_m4_m5<Void>>>) blockBuilder[ 0 ] )
+          blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) ( (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>) blockBuilder[ 0 ] )
             .startBlock( methodSignature )
             .last()
             .addMethod( "end()" )
@@ -172,7 +170,7 @@ public abstract class Generator
           }
         else if( hasTerminalPath )
           {
-          blockBuilder[ 0 ] = (BlockBuilder) ( (BlockBuilder<BlockBuilder<DescriptorBuilder_m1_m4_m5<Void>>>) blockBuilder[ 0 ] )
+          blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) ( (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>) blockBuilder[ 0 ] )
             .startBlock( methodSignature )
             .last()
             .addMethod( "end()" )
@@ -180,7 +178,7 @@ public abstract class Generator
           }
         else
           {
-          blockBuilder[ 0 ] = (BlockBuilder) blockBuilder[ 0 ].startBlock( methodSignature ).last();
+          blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) blockBuilder[ 0 ].startBlock( methodSignature ).last();
           }
         }
 
@@ -194,7 +192,7 @@ public abstract class Generator
 
         LOG.info( "{} - closing property: {}", (int) shortestPaths.shortestDistance( BEGIN, vertex ), vertex.getLhs() );
 
-        blockBuilder[ 0 ] = (BlockBuilder) blockBuilder[ 0 ].endBlock();
+        blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) blockBuilder[ 0 ].endBlock();
         }
       };
 
@@ -205,7 +203,7 @@ public abstract class Generator
       while( iterator.hasNext() )
         iterator.next();
 
-      block = (BlockBuilder<DescriptorBuilder_m1_m4_m5<Void>>) blockBuilder[ 0 ].endBlock();
+      block = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>) blockBuilder[ 0 ].endBlock();
       }
 
     return block;

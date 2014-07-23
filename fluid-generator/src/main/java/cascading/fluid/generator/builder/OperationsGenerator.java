@@ -24,11 +24,8 @@ import cascading.operation.Aggregator;
 import cascading.operation.Buffer;
 import cascading.operation.Filter;
 import cascading.operation.Function;
-import org.reflections.Reflections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import unquietcode.tools.flapi.Descriptor;
-import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder_m1_m4_m5;
+import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f;
 
 /**
  *
@@ -41,7 +38,7 @@ public class OperationsGenerator extends Generator
 
   public void createOperationBuilder( String targetPath )
     {
-    DescriptorBuilder_m1_m4_m5 builder = getBuilder()
+    DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder = getBuilder()
       .setPackage( "cascading.fluid.api.operation" )
       .setDescriptorName( "Operation" )
       .setStartingMethodName( "build" );
@@ -61,5 +58,4 @@ public class OperationsGenerator extends Generator
     {
     return FACTORY;
     }
-
   }
