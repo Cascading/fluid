@@ -58,15 +58,14 @@ public class AssemblyGenerator extends Generator
 
   private DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> addBranchBlock( DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder )
     {
-    BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>> branch = builder.startBlock( "Branch", "startBranch(String name)" ).any();
-
-    branch = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>) addSubTypeBlocks( branch, SubAssembly.class, false, Pipe.class );
+    BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>> branch = builder
+      .startBlock( "Branch", "startBranch(String name)" ).any();
 
     branch = branch
       .addMethod( "pipe(String name)" ).any()
       .addMethod( "pipe(String name, cascading.pipe.Pipe previous )" ).any();
 
-     branch = branch
+    branch = branch
       .startBlock( "Each", "each(cascading.tuple.Fields argumentSelector)" )
       .addAnnotation( METHOD_ANNOTATION )
       .withParameter( "factory", new ClassReference( PIPE_FACTORY ) )
@@ -113,6 +112,8 @@ public class AssemblyGenerator extends Generator
     branch = branch
       .addBlockReference( "GroupBy", "groupBy(cascading.tuple.Fields groupFields, cascading.tuple.Fields sortFields)" ).any( GROUP );
 
+    branch = addSubTypeBlocks( branch, SubAssembly.class, false, Pipe.class );
+
     builder = branch
       .addMethod( "completeBranch()" ).last( Pipe.class )
       .endBlock(); // branch
@@ -129,8 +130,6 @@ public class AssemblyGenerator extends Generator
 
     builder = builder
       .addBlockReference( "GroupByMerge", "groupByMerge(cascading.tuple.Fields groupFields, cascading.tuple.Fields sortFields, cascading.pipe.Pipe[] pipes)" ).any( GROUP_MERGE );
-
-//    builder = addBuilderBlock( builder, SubAssembly.class, false, START );
 
     return builder;
     }

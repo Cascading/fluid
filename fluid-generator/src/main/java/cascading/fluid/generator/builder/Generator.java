@@ -106,33 +106,34 @@ public abstract class Generator
       .endBlock();
     }
 
-  protected <T> BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f addSubTypeBlocks( BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block, Class<T> type, final boolean isFactory, Class... startAfter )
+  protected <T> BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f addSubTypeBlocks( BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block, Class<T> type, final boolean isFactory, Class... startsWithExclusive )
     {
     Map<Class<? extends T>, Set<Constructor>> constructorMap = Types.getAllInstantiable( reflections, type );
 
     for( final Class<? extends T> subType : constructorMap.keySet() )
       {
-      LOG.info( "adding {}: {}", type.getSimpleName(), subType.getName() );
-
       final Set<Constructor> constructors = constructorMap.get( subType );
 
       final String operationName = subType.getSimpleName();
-      String methodName = isFactory ? operationName : Text.toFirstLower( operationName ); // Factory methods have upper first letter
+      String methodName = ( isFactory ? operationName : Text.toFirstLower( operationName ) ) + "()"; // Factory methods have upper first letter
 
-      MethodBuilder_2m12_4f_2m13_4f_2m14_4f_2m15_4f_2m16_4f_2m17_4f_2m18_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>> tmp = block.startBlock( operationName, methodName + "()" );
+      LOG.info( "adding block {}: {}, with methodName: {}", type.getSimpleName(), subType.getName(), methodName );
 
-      block = tmp.
-        addAnnotation( METHOD_ANNOTATION )
+      // startBlock
+
+      MethodBuilder_2m12_4f_2m13_4f_2m14_4f_2m15_4f_2m16_4f_2m17_4f_2m18_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>>> tmp = ( (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>) block ).startBlock( operationName, methodName )
+        .addAnnotation( METHOD_ANNOTATION )
         .withParameter( "factory", new ClassReference( getFactoryClass() ) )
         .withParameter( "creates", subType )
-        .finish()
-        .last();
+        .finish();
+
+      block = isFactory ? tmp.last() : tmp.any(); // allow subsequent pipe elements
 
       final BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f[] blockBuilder = {
         block
       };
 
-      final DirectedGraph<Prefix<String, String, Class>, Integer> graph = ParameterGraphs.createParameterGraph( constructors, true, startAfter );
+      final DirectedGraph<Prefix<String, String, Class>, Integer> graph = ParameterGraphs.createParameterGraph( constructors, true, startsWithExclusive );
       final FloydWarshallShortestPaths<Prefix<String, String, Class>, Integer> shortestPaths = new FloydWarshallShortestPaths<Prefix<String, String, Class>, Integer>( graph );
 
       ParameterGraphs.writeDOT( subType.getName(), graph );
@@ -178,7 +179,8 @@ public abstract class Generator
           }
         else
           {
-          blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) blockBuilder[ 0 ].startBlock( methodSignature ).last();
+          blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) blockBuilder[ 0 ]
+            .startBlock( methodSignature ).last();
           }
         }
 
@@ -192,7 +194,8 @@ public abstract class Generator
 
         LOG.info( "{} - closing property: {}", (int) shortestPaths.shortestDistance( BEGIN, vertex ), vertex.getLhs() );
 
-        blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) blockBuilder[ 0 ].endBlock();
+        blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) blockBuilder[ 0 ]
+          .endBlock();
         }
       };
 
@@ -203,7 +206,9 @@ public abstract class Generator
       while( iterator.hasNext() )
         iterator.next();
 
-      block = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>) blockBuilder[ 0 ].endBlock();
+      // endBlock
+      block = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>) blockBuilder[ 0 ]
+        .endBlock();
       }
 
     return block;

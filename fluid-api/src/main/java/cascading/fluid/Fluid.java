@@ -20,6 +20,8 @@
 
 package cascading.fluid;
 
+import java.lang.reflect.Type;
+
 import cascading.fluid.api.assembly.Assembly.AssemblyBuilder;
 import cascading.fluid.api.operation.Operation.OperationBuilder;
 import cascading.fluid.builder.ConcreteAssemblyHelper;
@@ -41,9 +43,14 @@ public class Fluid
   private static AssemblyBuilder.Start assemblyStart;
   private static OperationBuilder.Start operationStart;
 
-  public static Fields fields( String... fields )
+  public static Fields fields( Comparable... fields )
     {
     return new Fields( fields );
+    }
+
+  public static Fields fields( Comparable field, Type type )
+    {
+    return new Fields( field, type );
     }
 
   public static cascading.fluid.api.assembly.Assembly.AssemblyBuilder.Start assembly()

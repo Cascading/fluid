@@ -51,9 +51,9 @@ public class ParameterGraphs
   public static final Prefix<String, String, Class> BEGIN = new Prefix<String, String, Class>( "BEGIN" );
   public static final Prefix<String, String, Class> END = new Prefix<String, String, Class>( "END" );
 
-  public static DirectedGraph<Prefix<String, String, Class>, Integer> createParameterGraph( Set<Constructor> constructors, boolean path, Class... startAfter )
+  public static DirectedGraph<Prefix<String, String, Class>, Integer> createParameterGraph( Set<Constructor> constructors, boolean trackPath, Class... startsWithExclusive )
     {
-    Set<Class> after = new HashSet<Class>( Arrays.asList( startAfter ) );
+    Set<Class> after = new HashSet<Class>( Arrays.asList( startsWithExclusive ) );
 
     DirectedGraph<Prefix<String, String, Class>, Integer> graph = newGraph();
 
@@ -61,6 +61,7 @@ public class ParameterGraphs
     graph.addVertex( END );
 
     Set<String> foundConstructors = new HashSet<String>();
+
     for( Constructor constructor : constructors )
       {
       ConstructorProperties annotation = (ConstructorProperties) constructor.getAnnotation( ConstructorProperties.class );
@@ -90,16 +91,16 @@ public class ParameterGraphs
         String property = propertyArray[ i ];
         Class parameterType = typeArray[ i ];
 
-        if( !found && after.contains( parameterType ) )
+        if( i == 0 && !found && after.contains( parameterType ) )
           {
           found = true;
           continue; // skip this one
           }
 
-        if( !found )
-          continue;
+        if( !found ) // wasn't found prior
+          break;
 
-        String hash = path ? lastPair.getHash() : null;
+        String hash = trackPath ? lastPair.getHash() : null;
         Prefix<String, String, Class> pair = new Prefix<String, String, Class>( hash, property, parameterType );
 
         graph.addVertex( pair );

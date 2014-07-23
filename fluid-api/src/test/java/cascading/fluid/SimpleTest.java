@@ -28,9 +28,11 @@ import cascading.operation.text.DateParser;
 import cascading.pipe.Each;
 import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
+import cascading.pipe.assembly.Coerce;
 import cascading.tuple.Fields;
 import org.junit.Test;
 
+import static cascading.fluid.Fluid.fields;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -49,11 +51,11 @@ public class SimpleTest
       .every( Fields.ALL ).aggregator( new Count() ).outgoing( Fields.ALL )
       .completeGroupBy()
       .each( Fields.ALL ).filter( new RegexFilter( "" ) )
-//      .coerce().coerceFields( Fields.ALL ).types( int.class )
+      .coerce().coerceFields( fields( "foo", int.class ) ).end()
       .completeBranch();
 
     assertNotNull( rhs );
-    assertTrue( rhs instanceof Each );
+    assertTrue( rhs instanceof Coerce );
 
     Pipe lhs = builder.startBranch( "lhs" )
       .each( Fields.ALL ).function( new Identity() ).outgoing( Fields.RESULTS )

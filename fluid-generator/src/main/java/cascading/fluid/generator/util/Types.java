@@ -23,9 +23,11 @@ package cascading.fluid.generator.util;
 import java.beans.ConstructorProperties;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -43,7 +45,15 @@ public class Types
 
   public static <T> Map<Class<? extends T>, Set<Constructor>> getAllInstantiable( Reflections reflections, Class<T> type )
     {
-    Map<Class<? extends T>, Set<Constructor>> types = new HashMap<Class<? extends T>, Set<Constructor>>();
+    Map<Class<? extends T>, Set<Constructor>> types = new TreeMap<Class<? extends T>, Set<Constructor>>( new Comparator<Class<? extends T>>()
+    {
+    @Override
+    public int compare( Class<? extends T> lhs, Class<? extends T> rhs )
+      {
+      return lhs.getName().compareTo( rhs.getName() );
+      }
+    } );
+
     Set<Class<? extends T>> subTypes = reflections.getSubTypesOf( type );
 
     LOG.info( "for type: {}, found {} sub-types", type.getName(), subTypes.size() );
