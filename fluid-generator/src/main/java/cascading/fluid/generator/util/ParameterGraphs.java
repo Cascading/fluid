@@ -24,7 +24,9 @@ import java.beans.ConstructorProperties;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -49,15 +51,16 @@ public class ParameterGraphs
   public static final Prefix<String, String, Class> BEGIN = new Prefix<String, String, Class>( "BEGIN" );
   public static final Prefix<String, String, Class> END = new Prefix<String, String, Class>( "END" );
 
-  public static DirectedGraph<Prefix<String, String, Class>, Integer> createParameterGraph( Set<Constructor> constructors, boolean path )
+  public static DirectedGraph<Prefix<String, String, Class>, Integer> createParameterGraph( Set<Constructor> constructors, boolean path, Class... startAfter )
     {
+    Set<Class> after = new HashSet<Class>( Arrays.asList( startAfter ) );
+
     DirectedGraph<Prefix<String, String, Class>, Integer> graph = newGraph();
 
     graph.addVertex( BEGIN );
     graph.addVertex( END );
 
     Set<String> foundConstructors = new HashSet<String>();
-
     for( Constructor constructor : constructors )
       {
       ConstructorProperties annotation = (ConstructorProperties) constructor.getAnnotation( ConstructorProperties.class );
@@ -73,10 +76,28 @@ public class ParameterGraphs
 
       Prefix<String, String, Class> lastPair = BEGIN;
 
+      String[] propertyArray = annotation.value();
+      Class[] typeArray = constructor.getParameterTypes();
+
+      if( propertyArray.length != typeArray.length )
+        throw new IllegalStateException( "parameter and type mismatch: params: " +
+          Arrays.toString( propertyArray ) + ", types: " + Arrays.toString( typeArray ) );
+
+      boolean found = after.isEmpty();
+
       for( int i = 0; i < annotation.value().length; i++ )
         {
-        String property = annotation.value()[ i ];
-        Class parameterType = constructor.getParameterTypes()[ i ];
+        String property = propertyArray[ i ];
+        Class parameterType = typeArray[ i ];
+
+        if( !found && after.contains( parameterType ) )
+          {
+          found = true;
+          continue; // skip this one
+          }
+
+        if( !found )
+          continue;
 
         String hash = path ? lastPair.getHash() : null;
         Prefix<String, String, Class> pair = new Prefix<String, String, Class>( hash, property, parameterType );

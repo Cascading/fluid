@@ -24,6 +24,7 @@ import cascading.pipe.Each;
 import cascading.pipe.Every;
 import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
+import cascading.pipe.SubAssembly;
 import unquietcode.tools.flapi.Descriptor;
 import unquietcode.tools.flapi.builder.Block.BlockBuilder;
 import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder_m1_m4_m5;
@@ -56,6 +57,8 @@ public class AssemblyGenerator extends Generator
   private DescriptorBuilder_m1_m4_m5<Void> addBranchBlock( DescriptorBuilder_m1_m4_m5<Void> builder )
     {
     BlockBuilder<DescriptorBuilder_m1_m4_m5<Void>> branch = builder.startBlock( "Branch", "startBranch(String name)" ).any();
+
+    branch = (BlockBuilder<DescriptorBuilder_m1_m4_m5<Void>>) addSubTypeBlocks( branch, SubAssembly.class, false, Pipe.class );
 
     branch = branch
       .addMethod( "pipe(String name)" ).any()
@@ -115,12 +118,9 @@ public class AssemblyGenerator extends Generator
     builder = builder
       .startBlock( "GroupByMerge", "groupByMerge(cascading.tuple.Fields groupFields, cascading.pipe.Pipe[] pipes)" ).any( GROUP_MERGE )
 
-      .addBlockReference( "Every", "every(cascading.tuple.Fields argumentSelector)" )
-//      .after( GROUP_MERGE )
-      .any( EVERY )
+      .addBlockReference( "Every", "every(cascading.tuple.Fields argumentSelector)" ).any( EVERY )
 
-      .addBlockReference( "Each", "each(cascading.tuple.Fields argumentSelector)" )
-      .any( EACH )
+      .addBlockReference( "Each", "each(cascading.tuple.Fields argumentSelector)" ).any( EACH )
 
       .addMethod( "completeBranch()" ).last( Pipe.class )
       .endBlock(); // groupByMerge
@@ -128,8 +128,14 @@ public class AssemblyGenerator extends Generator
     builder = builder
       .addBlockReference( "GroupByMerge", "groupByMerge(cascading.tuple.Fields groupFields, cascading.tuple.Fields sortFields, cascading.pipe.Pipe[] pipes)" ).any( GROUP_MERGE );
 
-    // todo: add subAssemblies on peer with each/every/etc
+//    builder = addBuilderBlock( builder, SubAssembly.class, false, START );
 
     return builder;
+    }
+
+  @Override
+  protected String getFactoryClass()
+    {
+    return PIPE_FACTORY;
     }
   }

@@ -23,13 +23,14 @@ buildscript {
     maven { url 'http://repo.spring.io/plugins-release' }
   }
   dependencies {
-    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.6'
+    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.5'
   }
 }
 
 //ext.cascadingVersion = '2.5.5'
 ext.cascadingVersion = '2.6.0-wip-dev'
 ext.flapiVersion = '0.7-SNAPSHOT'
+//ext.flapiVersion = '0.6-SNAPSHOT'
 //ext.flapiVersion = '0.5'
 
 allprojects() {

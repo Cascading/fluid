@@ -48,7 +48,9 @@ public class SimpleTest
     Pipe rhs = builder.startBranch( "rhs" ).groupBy( Fields.ALL )
       .every( Fields.ALL ).aggregator( new Count() ).outgoing( Fields.ALL )
       .completeGroupBy()
-      .each( Fields.ALL ).filter( new RegexFilter( "" ) ).completeBranch();
+      .each( Fields.ALL ).filter( new RegexFilter( "" ) )
+//      .coerce().coerceFields( Fields.ALL ).types( int.class )
+      .completeBranch();
 
     assertNotNull( rhs );
     assertTrue( rhs instanceof Each );
