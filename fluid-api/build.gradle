@@ -38,7 +38,10 @@ dependencies {
   compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.2'
   compile group: 'log4j', name: 'log4j', version: '1.2.16'
 
+  provided group: 'cascading', name: 'cascading-local', version: cascadingVersion
+
   testCompile group: 'junit', name: 'junit', version: '4.11'
+
 }
 
 project( ':fluid-generator' ).fluidGenerator {

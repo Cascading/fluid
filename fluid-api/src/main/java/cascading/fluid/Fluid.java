@@ -20,6 +20,8 @@
 
 package cascading.fluid;
 
+import cascading.fluid.api.assembly.Assembly.AssemblyBuilder;
+import cascading.fluid.api.operation.Operation.OperationBuilder;
 import cascading.fluid.builder.ConcreteAssemblyHelper;
 import cascading.fluid.api.assembly.Assembly.AssemblyGenerator;
 import cascading.fluid.api.assembly.Assembly.AssemblyHelper;
@@ -29,44 +31,62 @@ import cascading.fluid.builder.AssemblyMethodHandler;
 import cascading.fluid.builder.LocalMethodLogger;
 import cascading.fluid.builder.OperationMethodHandler;
 import cascading.fluid.builder.Reflection;
+import cascading.tuple.Fields;
 
 /**
  *
  */
 public class Fluid
   {
+  private static AssemblyBuilder.Start assemblyStart;
+  private static OperationBuilder.Start operationStart;
+
+  public static Fields fields( String... fields )
+    {
+    return new Fields( fields );
+    }
+
   public static cascading.fluid.api.assembly.Assembly.AssemblyBuilder.Start assembly()
     {
+    if( assemblyStart != null )
+      return assemblyStart;
+
     AssemblyHelper helper = new ConcreteAssemblyHelper( new AssemblyMethodHandler() );
 
-    return AssemblyGenerator
-      .startAssembly( helper, new LocalMethodLogger() );
+    assemblyStart = AssemblyGenerator.startAssembly( helper, new LocalMethodLogger() );
+
+    return assemblyStart;
+    }
+
+  private static OperationBuilder.Start getOperationBuilder()
+    {
+    if( operationStart != null )
+      return operationStart;
+
+    OperationHelper operationHelper = Reflection.create( OperationHelper.class, new OperationMethodHandler() );
+
+    operationStart = OperationGenerator.build( operationHelper, new LocalMethodLogger() );
+
+    return operationStart;
     }
 
   public static cascading.fluid.api.operation.Function.FunctionBuilder<Void> function()
     {
-    OperationHelper helper = Reflection.create( OperationHelper.class, new OperationMethodHandler() );
-
-    return OperationGenerator
-      .build( helper, new LocalMethodLogger() )
-      .function();
+    return getOperationBuilder().function();
     }
 
   public static cascading.fluid.api.operation.Filter.FilterBuilder<Void> filter()
     {
-    OperationHelper helper = Reflection.create( OperationHelper.class, new OperationMethodHandler() );
-
-    return OperationGenerator
-      .build( helper, new LocalMethodLogger() )
-      .filter();
+    return getOperationBuilder().filter();
     }
 
   public static cascading.fluid.api.operation.Aggregator.AggregatorBuilder<Void> aggregator()
     {
-    OperationHelper helper = Reflection.create( OperationHelper.class, new OperationMethodHandler() );
+    return getOperationBuilder().aggregator();
+    }
 
-    return OperationGenerator
-      .build( helper, new LocalMethodLogger() )
-      .aggregator();
+  public static cascading.fluid.api.operation.Buffer.BufferBuilder<Void> buffer()
+    {
+    return getOperationBuilder().buffer();
     }
   }

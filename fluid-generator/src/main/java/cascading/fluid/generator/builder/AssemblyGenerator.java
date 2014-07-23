@@ -74,12 +74,10 @@ public class AssemblyGenerator extends Generator
       .endBlock() // function
 
       .addMethod( "filter(cascading.operation.Filter filter)" ).last() // filter
-//      .addBlockReference( "Function", "function()" ).last()
-//      .addBlockReference( "Filter", "filter()" ).last()
       .endBlock(); // each
 
     branch = branch
-      .startBlock( "GroupBy", "groupBy(cascading.tuple.Fields groupingFields)" )
+      .startBlock( "GroupBy", "groupBy(cascading.tuple.Fields groupFields)" )
       .addAnnotation( METHOD_ANNOTATION )
       .withClassParam( "factory" ).havingValue( PIPE_FACTORY )
       .withClassParam( "creates" ).havingValue( GroupBy.class )
@@ -102,30 +100,35 @@ public class AssemblyGenerator extends Generator
       .addMethod( "outgoing(cascading.tuple.Fields outgoingSelector)" ).last()
       .endBlock() // buffer
 
-//      .addBlockReference( "Aggregator", "aggregator()" ).last()
-//      .addBlockReference( "Buffer", "buffer()" ).last()
       .endBlock() // every
 
-      .addMethod( "complete()" ).last()
+      .addMethod( "completeGroupBy()" ).last()
       .endBlock(); // groupBy
 
-//    branch = branch
-//      .addMethod( "groupBy(cascading.tuple.Fields groupingFields)" )
-//      .addAnnotation( MethodMeta.class ).withParam( "creates" ).havingValue( GroupBy.class ).finish()
-//      .any( GROUP );
-
-
-    // todo: add subAssemblies on peer with each/every/etc
+    branch = branch
+      .addBlockReference( "GroupBy", "groupBy(cascading.tuple.Fields groupFields, cascading.tuple.Fields sortFields)" ).any( GROUP );
 
     builder = branch
       .addMethod( "completeBranch()" ).last( Pipe.class )
       .endBlock(); // branch
 
-//    builder = addOperationsBlock( builder, Function.class, false, EACH );
-//    builder = addOperationsBlock( builder, Filter.class, false, EACH );
-//
-//    builder = addOperationsBlock( builder, Aggregator.class, false, EVERY );
-//    builder = addOperationsBlock( builder, Buffer.class, false, EVERY );
+    builder = builder
+      .startBlock( "GroupByMerge", "groupByMerge(cascading.tuple.Fields groupFields, cascading.pipe.Pipe[] pipes)" ).any( GROUP_MERGE )
+
+      .addBlockReference( "Every", "every(cascading.tuple.Fields argumentSelector)" )
+//      .after( GROUP_MERGE )
+      .any( EVERY )
+
+      .addBlockReference( "Each", "each(cascading.tuple.Fields argumentSelector)" )
+      .any( EACH )
+
+      .addMethod( "completeBranch()" ).last( Pipe.class )
+      .endBlock(); // groupByMerge
+
+    builder = builder
+      .addBlockReference( "GroupByMerge", "groupByMerge(cascading.tuple.Fields groupFields, cascading.tuple.Fields sortFields, cascading.pipe.Pipe[] pipes)" ).any( GROUP_MERGE );
+
+    // todo: add subAssemblies on peer with each/every/etc
 
     return builder;
     }

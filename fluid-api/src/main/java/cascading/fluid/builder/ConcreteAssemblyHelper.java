@@ -25,8 +25,11 @@ import javax.annotation.Nullable;
 
 import cascading.fluid.api.assembly.Assembly.AssemblyHelper;
 import cascading.fluid.api.assembly.Branch.BranchHelper;
+import cascading.fluid.api.assembly.GroupByMerge.GroupByMergeHelper;
 import cascading.fluid.factory.PipeFactory;
+import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
+import cascading.tuple.Fields;
 import com.google.common.base.Function;
 
 /**
@@ -56,6 +59,30 @@ public class ConcreteAssemblyHelper implements AssemblyHelper
       tails[ count++ ] = pipe;
 
     return tails;
+    }
+
+  @Override
+  public void groupByMerge( Fields groupFields, Pipe[] pipes, AtomicReference<GroupByMergeHelper> _helper1 )
+    {
+    groupByMerge( groupFields, null, pipes, _helper1 );
+    }
+
+  @Override
+  public void groupByMerge( Fields groupFields, Fields sortFields, Pipe[] pipes, AtomicReference<GroupByMergeHelper> _helper1 )
+    {
+    Pipe groupBy = new GroupBy( pipes, groupFields, sortFields );
+
+    for( Pipe pipe : pipes )
+      context.branchTails.remove( pipe.getName() );
+
+    context.branchTails.put( groupBy.getName(), groupBy );
+    context.currentBranch = groupBy.getName();
+
+    GroupByMergeHelper branchHelper = Reflection.create( GroupByMergeHelper.class, methodHandler, PipeFactory.class );
+
+    ( (PipeFactory) branchHelper ).setContext( context );
+
+    _helper1.set( branchHelper );
     }
 
   @Override

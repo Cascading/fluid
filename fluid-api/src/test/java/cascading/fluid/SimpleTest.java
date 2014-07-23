@@ -47,7 +47,7 @@ public class SimpleTest
 
     Pipe rhs = builder.startBranch( "rhs" ).groupBy( Fields.ALL )
       .every( Fields.ALL ).aggregator( new Count() ).outgoing( Fields.ALL )
-      .complete()
+      .completeGroupBy()
       .each( Fields.ALL ).filter( new RegexFilter( "" ) ).completeBranch();
 
     assertNotNull( rhs );
@@ -56,7 +56,7 @@ public class SimpleTest
     Pipe lhs = builder.startBranch( "lhs" )
       .each( Fields.ALL ).function( new Identity() ).outgoing( Fields.RESULTS )
       .each( Fields.ALL ).filter( new RegexFilter( "" ) )
-      .groupBy( Fields.ALL ).complete()
+      .groupBy( Fields.ALL ).completeGroupBy()
       .completeBranch();
 
     assertNotNull( lhs );
@@ -84,51 +84,4 @@ public class SimpleTest
     assertNotNull( dateParser.getFieldDeclaration() );
     assertNotNull( dateParser.getDateFormatString() );
     }
-
-/*
-  public static void functions( String[] args )
-    {
-    Function function = OperationGenerator.build( null )
-      .function()
-      .DateFormatter()
-      .fieldDeclaration( Fields.NONE )
-      .dateFormatString( "" )
-      .end();
-
-
-    Filter filter = OperationGenerator.build( null )
-      .filter().Counter()
-      .group( "" ).counter( "" ).increment( 1 )
-      .end();
-
-    AssemblyBuilder.Start assembly = AssemblyGenerator.startAssembly( null );
-
-    assembly.startBranch( "incoming" )
-      .each( Fields.NONE ).function( function ).outgoing( Fields.NONE )
-      .each( Fields.NONE ).filter( filter );
-
-    assembly.startBranch( "incoming" )
-      .each( Fields.NONE ).filter( filter )
-      .groupBy( Fields.NONE )
-      .every( Fields.NONE ).aggregator( null ).outgoing( Fields.NONE );
-
-    assembly.startBranch( "" ).each( Fields.NONE )
-      .function().Insert().fieldDeclaration( Fields.ARGS ).values( "" ).end()
-      .each( Fields.NONE ).filter( filter )
-      .groupBy( Fields.ALL )
-      .every( Fields.NONE ).buffer().FirstNBuffer();
-
-    Pipe[] tail = assembly
-      .startBranch( "incoming" )
-      .each( Fields.NONE ).function().FieldFormatter().format( "" ).end()
-      .each( Fields.NONE ).function( function ).outgoing( Fields.NONE )
-      .groupBy( Fields.NONE )
-      .every( Fields.NONE ).aggregator().Average().fieldDeclaration( Fields.NONE ).end()
-      .each( Fields.NONE ).filter( filter )
-      .completeBranch().completeAssembly();
-
-    assembly.completeAssembly();
-    }
-*/
-
   }

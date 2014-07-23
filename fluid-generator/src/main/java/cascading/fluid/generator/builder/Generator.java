@@ -43,6 +43,7 @@ public class Generator
   public static final int GROUP = 1;
   public static final int EACH = 2;
   public static final int EVERY = 3;
+  public static final int GROUP_MERGE = 4;
 
   protected static MethodLogger methodLogger = MethodLogger.from( System.out );
 
