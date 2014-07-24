@@ -43,19 +43,14 @@ public class OperationsGenerator extends Generator
       .setDescriptorName( "Operation" )
       .setStartingMethodName( "build" );
 
-    builder = addBuilderBlock( builder, Function.class, true, EACH );
-    builder = addBuilderBlock( builder, Filter.class, true, EACH );
-    builder = addBuilderBlock( builder, Aggregator.class, true, EACH );
-    builder = addBuilderBlock( builder, Buffer.class, true, EACH );
+    builder = addBuilderBlock( builder, Function.class, true, EACH, FACTORY );
+    builder = addBuilderBlock( builder, Filter.class, true, EACH, FACTORY );
+    builder = addBuilderBlock( builder, Aggregator.class, true, EACH, FACTORY );
+    builder = addBuilderBlock( builder, Buffer.class, true, EACH, FACTORY );
 
     Descriptor build = builder.enableCondensedClassNames().build();
 
     writeBuilder( targetPath, build );
     }
 
-  @Override
-  protected String getFactoryClass()
-    {
-    return FACTORY;
-    }
   }

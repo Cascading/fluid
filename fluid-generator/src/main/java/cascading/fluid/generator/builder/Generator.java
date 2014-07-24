@@ -20,8 +20,10 @@
 
 package cascading.fluid.generator.builder;
 
+import java.beans.ConstructorProperties;
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -30,6 +32,7 @@ import cascading.fluid.generator.util.ParameterGraphs;
 import cascading.fluid.generator.util.Prefix;
 import cascading.fluid.generator.util.Text;
 import cascading.fluid.generator.util.Types;
+import cascading.pipe.Splice;
 import com.google.common.collect.Iterables;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.Graphs;
@@ -67,7 +70,10 @@ public abstract class Generator
   public static final int GROUP = 1;
   public static final int EACH = 2;
   public static final int EVERY = 3;
-  public static final int GROUP_MERGE = 4;
+  public static final int COGROUP = 4;
+  public static final int GROUP_MERGE = 5;
+  public static final int MERGE = 6;
+  public static final int HASH_JOIN = 7;
 
   protected static MethodLogger methodLogger = MethodLogger.from( System.out );
   protected static Reflections reflections;
@@ -92,9 +98,7 @@ public abstract class Generator
     return Flapi.builder();
     }
 
-  protected abstract String getFactoryClass();
-
-  protected <T> DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> addBuilderBlock( DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder, Class<T> type, final boolean isFactory, int group )
+  protected <T> DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> addBuilderBlock( DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder, Class<T> type, final boolean isFactory, int group, String factoryClass )
     {
     String typeName = type.getSimpleName();
     MethodBuilder_2m12_4f_2m13_4f_2m14_4f_2m15_4f_2m16_4f_2m17_4f_2m18_4f tmp1 = builder
@@ -102,116 +106,181 @@ public abstract class Generator
 
     BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) ( isFactory ? tmp1.last() : tmp1.after( group ).last() );
 
-    return (DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>) addSubTypeBlocks( block, type, isFactory )
+    return (DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>) addSubTypeBlocks( block, type, isFactory, false, factoryClass )
       .endBlock();
     }
 
-  protected <T> BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f addSubTypeBlocks( BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block, Class<T> type, final boolean isFactory, Class... startsWithExclusive )
+  protected <T> BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f addSubTypeBlocks( BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block, Class<T> type, final boolean isFactory, boolean addReference, String factoryClass, Class... startsWithExclusive )
     {
-    Map<Class<? extends T>, Set<Constructor>> constructorMap = Types.getAllInstantiable( reflections, type );
+    Map<Class<? extends T>, Set<Constructor>> constructorMap = Types.getAllInstantiableSubTypes( reflections, type );
 
     for( final Class<? extends T> subType : constructorMap.keySet() )
       {
-      final Set<Constructor> constructors = constructorMap.get( subType );
+      Set<Constructor> constructors = constructorMap.get( subType );
 
-      final String operationName = subType.getSimpleName();
-      String methodName = ( isFactory ? operationName : Text.toFirstLower( operationName ) ) + "()"; // Factory methods have upper first letter
+      LOG.info( "adding block {}: subtype: {}", type.getSimpleName(), subType.getName() );
 
-      LOG.info( "adding block {}: {}, with methodName: {}", type.getSimpleName(), subType.getName(), methodName );
-
-      // startBlock
-
-      MethodBuilder_2m12_4f_2m13_4f_2m14_4f_2m15_4f_2m16_4f_2m17_4f_2m18_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>>> tmp = ( (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>) block ).startBlock( operationName, methodName )
-        .addAnnotation( METHOD_ANNOTATION )
-        .withParameter( "factory", new ClassReference( getFactoryClass() ) )
-        .withParameter( "creates", subType )
-        .finish();
-
-      block = isFactory ? tmp.last() : tmp.any(); // allow subsequent pipe elements
-
-      final BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f[] blockBuilder = {
-        block
-      };
-
-      final DirectedGraph<Prefix<String, String, Class>, Integer> graph = ParameterGraphs.createParameterGraph( constructors, true, startsWithExclusive );
-      final FloydWarshallShortestPaths<Prefix<String, String, Class>, Integer> shortestPaths = new FloydWarshallShortestPaths<Prefix<String, String, Class>, Integer>( graph );
-
-      ParameterGraphs.writeDOT( subType.getName(), graph );
-
-      TraversalListenerAdapter<Prefix<String, String, Class>, Integer> listener = new TraversalListenerAdapter<Prefix<String, String, Class>, Integer>()
-      {
-      @Override
-      public void vertexTraversed( VertexTraversalEvent<Prefix<String, String, Class>> event )
-        {
-        Prefix<String, String, Class> vertex = event.getVertex();
-
-        if( vertex == BEGIN || vertex == END )
-          return;
-
-        Integer current = Iterables.getFirst( new TreeSet<Integer>( graph.incomingEdgesOf( vertex ) ), 0 );
-        Integer prior = Iterables.getFirst( new TreeSet<Integer>( graph.incomingEdgesOf( graph.getEdgeSource( current ) ) ), null );
-
-        int depth = (int) shortestPaths.shortestDistance( BEGIN, vertex );
-
-        String methodSignature = createMethodSignature( vertex );
-
-        LOG.info( "{} - opening property: {}, creating method: {}, group: {}, prior: {}", depth, vertex.getLhs(), methodSignature, depth, prior != null );
-
-        int outDegree = graph.outDegreeOf( vertex );
-        boolean hasTerminalPath = Graphs.successorListOf( graph, vertex ).contains( END );
-        boolean isTerminal = outDegree == 1 && hasTerminalPath;
-
-        if( hasTerminalPath && isFactory )
-          {
-          blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) ( (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>) blockBuilder[ 0 ] )
-            .startBlock( methodSignature )
-            .last()
-            .addMethod( "end()" )
-            .last( subType );
-          }
-        else if( hasTerminalPath )
-          {
-          blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) ( (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>) blockBuilder[ 0 ] )
-            .startBlock( methodSignature )
-            .last()
-            .addMethod( "end()" )
-            .last();
-          }
-        else
-          {
-          blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) blockBuilder[ 0 ]
-            .startBlock( methodSignature ).last();
-          }
-        }
-
-      @Override
-      public void vertexFinished( VertexTraversalEvent<Prefix<String, String, Class>> event )
-        {
-        Prefix<String, String, Class> vertex = event.getVertex();
-
-        if( vertex == BEGIN || vertex == END )
-          return;
-
-        LOG.info( "{} - closing property: {}", (int) shortestPaths.shortestDistance( BEGIN, vertex ), vertex.getLhs() );
-
-        blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) blockBuilder[ 0 ]
-          .endBlock();
-        }
-      };
-
-      DepthFirstIterator<Prefix<String, String, Class>, Integer> iterator = new DepthFirstIterator<Prefix<String, String, Class>, Integer>( graph, BEGIN );
-
-      iterator.addTraversalListener( listener );
-
-      while( iterator.hasNext() )
-        iterator.next();
-
-      // endBlock
-      block = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>) blockBuilder[ 0 ]
-        .endBlock();
+      block = addTypeBuilderBlock( block, isFactory, subType, constructors, addReference, factoryClass, startsWithExclusive );
       }
 
     return block;
+    }
+
+  protected DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> addPipeBranchBuilderType(
+    DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder,
+    String operationName,
+    Class<? extends Splice> splice, int groupID, boolean isMerge, String factoryClass )
+    {
+    Set<Constructor> constructors;
+
+    if( isMerge )
+      constructors = Types.getConstructorsWithMultiplePipes( splice );
+    else
+      constructors = Types.getInstantiableConstructors( splice );
+
+    builder = addPipeTypeBuilderBlock( builder, splice, constructors, operationName, groupID, factoryClass );
+
+    return builder;
+    }
+
+  protected <T> DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> addPipeTypeBuilderBlock(
+    DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> block,
+    final Class<? extends T> type,
+    Set<Constructor> constructors,
+    String operationName,
+    int groupID, String factoryClass,
+    Class... startsWithExclusive )
+    {
+    String startMethod = "start" + operationName + "()";
+    String endMethod = "create" + operationName + "()";
+
+    LOG.info( "to type: {}, adding methodName: {}", type.getName(), startMethod );
+
+    // startBlock
+    BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>> tmp = block
+      .startBlock( operationName, startMethod )
+      .addAnnotation( METHOD_ANNOTATION )
+      .withParameter( "factory", new ClassReference( factoryClass ) )
+      .withParameter( "creates", type )
+      .finish()
+      .any( groupID );
+
+    BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f blockBuilder = generateBlock( tmp, true, type, constructors, endMethod, startsWithExclusive );
+
+    return ( (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>) blockBuilder )
+//      .addMethod( endMethod ).last( type )
+      .endBlock();
+    }
+
+  protected <T> BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f addTypeBuilderBlock( BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block, final boolean isFactory, final Class<? extends T> type, Set<Constructor> constructors, boolean addReference, String factoryClass, Class... startsWithExclusive )
+    {
+    final String operationName = type.getSimpleName();
+    String methodName = ( isFactory ? operationName : Text.toFirstLower( operationName ) ) + "()"; // Factory methods have upper first letter
+
+    LOG.info( "to type: {}, adding methodName: {}", type.getName(), methodName );
+
+    if( addReference )
+      return (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) block.addBlockReference( operationName, methodName ).any();
+
+    // startBlock
+    MethodBuilder_2m12_4f_2m13_4f_2m14_4f_2m15_4f_2m16_4f_2m17_4f_2m18_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>>> tmp = ( (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>) block )
+      .startBlock( operationName, methodName )
+      .addAnnotation( METHOD_ANNOTATION )
+      .withParameter( "factory", new ClassReference( factoryClass ) )
+      .withParameter( "creates", type )
+      .finish();
+
+    block = isFactory ? tmp.last() : tmp.any(); // allow subsequent pipe elements
+
+    BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f blockBuilder = generateBlock( block, isFactory, type, constructors, "end()", startsWithExclusive );
+
+    // endBlock
+    block = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>) blockBuilder
+      .endBlock();
+
+    return block;
+    }
+
+  private <T> BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f generateBlock( BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block, final boolean isFactory, final Class<? extends T> type, Set<Constructor> constructors, final String endMethod, Class[] startsWithExclusive )
+    {
+    final BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f[] blockBuilder = {
+      block
+    };
+
+    final DirectedGraph<Prefix<String, String, Class>, Integer> graph = ParameterGraphs.createParameterGraph( constructors, true, startsWithExclusive );
+    final FloydWarshallShortestPaths<Prefix<String, String, Class>, Integer> shortestPaths = new FloydWarshallShortestPaths<Prefix<String, String, Class>, Integer>( graph );
+
+    ParameterGraphs.writeDOT( type.getName(), graph );
+
+    TraversalListenerAdapter<Prefix<String, String, Class>, Integer> listener = new TraversalListenerAdapter<Prefix<String, String, Class>, Integer>()
+    {
+    @Override
+    public void vertexTraversed( VertexTraversalEvent<Prefix<String, String, Class>> event )
+      {
+      Prefix<String, String, Class> vertex = event.getVertex();
+
+      if( vertex == BEGIN || vertex == END )
+        return;
+
+      Integer current = Iterables.getFirst( new TreeSet<Integer>( graph.incomingEdgesOf( vertex ) ), 0 );
+      Integer prior = Iterables.getFirst( new TreeSet<Integer>( graph.incomingEdgesOf( graph.getEdgeSource( current ) ) ), null );
+
+      int depth = (int) shortestPaths.shortestDistance( BEGIN, vertex );
+
+      String methodSignature = createMethodSignature( vertex );
+
+      LOG.info( "{} - opening property: {}, creating method: {}, group: {}, prior: {}", depth, vertex.getLhs(), methodSignature, depth, prior != null );
+
+      int outDegree = graph.outDegreeOf( vertex );
+      boolean hasTerminalPath = Graphs.successorListOf( graph, vertex ).contains( END );
+      boolean isTerminal = outDegree == 1 && hasTerminalPath;
+
+      if( hasTerminalPath && isFactory )
+        {
+        blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) ( (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>) blockBuilder[ 0 ] )
+          .startBlock( methodSignature )
+          .last()
+          .addMethod( endMethod )
+          .last( type );
+        }
+      else if( hasTerminalPath )
+        {
+        blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) ( (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>) blockBuilder[ 0 ] )
+          .startBlock( methodSignature )
+          .last()
+          .addMethod( endMethod )
+          .last();
+        }
+      else
+        {
+        blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) blockBuilder[ 0 ]
+          .startBlock( methodSignature ).last();
+        }
+      }
+
+    @Override
+    public void vertexFinished( VertexTraversalEvent<Prefix<String, String, Class>> event )
+      {
+      Prefix<String, String, Class> vertex = event.getVertex();
+
+      if( vertex == BEGIN || vertex == END )
+        return;
+
+      LOG.info( "{} - closing property: {}", (int) shortestPaths.shortestDistance( BEGIN, vertex ), vertex.getLhs() );
+
+      blockBuilder[ 0 ] = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f) blockBuilder[ 0 ]
+        .endBlock();
+      }
+    };
+
+    DepthFirstIterator<Prefix<String, String, Class>, Integer> iterator = new DepthFirstIterator<Prefix<String, String, Class>, Integer>( graph, BEGIN );
+
+    iterator.addTraversalListener( listener );
+
+    while( iterator.hasNext() )
+      iterator.next();
+
+    return blockBuilder[ 0 ];
     }
 
   private String createMethodSignature( Prefix<String, String, Class> pair )
@@ -222,7 +291,8 @@ public abstract class Generator
     String methodSignature;
 
     if( parameterType.isArray() )
-      methodSignature = property + "(" + parameterType.getComponentType().getName() + "... " + property + ")";
+//      methodSignature = property + "(" + parameterType.getComponentType().getName() + "... " + property + ")";
+      methodSignature = property + "(" + parameterType.getComponentType().getName() + "[] " + property + ")"; // TODO: enable vargs
     else
       methodSignature = property + "(" + parameterType.getName() + " " + property + ")";
 

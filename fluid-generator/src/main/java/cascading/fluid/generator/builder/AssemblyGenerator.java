@@ -20,22 +20,28 @@
 
 package cascading.fluid.generator.builder;
 
+import cascading.pipe.CoGroup;
 import cascading.pipe.Each;
 import cascading.pipe.Every;
 import cascading.pipe.GroupBy;
+import cascading.pipe.HashJoin;
+import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import unquietcode.tools.flapi.ClassReference;
 import unquietcode.tools.flapi.Descriptor;
 import unquietcode.tools.flapi.builder.Block.BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f;
 import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f;
-import unquietcode.tools.flapi.builder.Method.MethodBuilder_2m12_4f_2m13_4f_2m14_4f_2m15_4f_2m16_4f_2m17_4f_2m18_4f;
 
 /**
  *
  */
 public class AssemblyGenerator extends Generator
   {
+  private static final Logger LOG = LoggerFactory.getLogger( AssemblyGenerator.class );
+
   public AssemblyGenerator()
     {
     }
@@ -112,31 +118,34 @@ public class AssemblyGenerator extends Generator
     branch = branch
       .addBlockReference( "GroupBy", "groupBy(cascading.tuple.Fields groupFields, cascading.tuple.Fields sortFields)" ).any( GROUP );
 
-    branch = addSubTypeBlocks( branch, SubAssembly.class, false, Pipe.class );
+    branch = addSubTypeBlocks( branch, SubAssembly.class, false, false, PIPE_FACTORY, Pipe.class ); // sub-assemblies
 
     builder = branch
       .addMethod( "completeBranch()" ).last( Pipe.class )
       .endBlock(); // branch
 
-    builder = builder
-      .startBlock( "GroupByMerge", "groupByMerge(cascading.tuple.Fields groupFields, cascading.pipe.Pipe[] pipes)" ).any( GROUP_MERGE )
+    branch = builder.startBlock( "Group", "continueBranch(cascading.pipe.GroupBy groupBy)" ).any()
+      .addBlockReference( "Every", "every(cascading.tuple.Fields argumentSelector)" ).any()
+      .addBlockReference( "Each", "each(cascading.tuple.Fields argumentSelector)" ).any();
 
-      .addBlockReference( "Every", "every(cascading.tuple.Fields argumentSelector)" ).any( EVERY )
+    branch = addSubTypeBlocks( branch, SubAssembly.class, false, true, PIPE_FACTORY, Pipe.class );
 
-      .addBlockReference( "Each", "each(cascading.tuple.Fields argumentSelector)" ).any( EACH )
+    builder = branch.addMethod( "completeBranch()" ).last( Pipe.class )
+      .endBlock(); // branch
 
-      .addMethod( "completeBranch()" ).last( Pipe.class )
-      .endBlock(); // groupByMerge
+    builder.addBlockReference( "Group", "continueBranch(cascading.pipe.CoGroup coGroup)" ).any();
+    builder.addBlockReference( "Branch", "continueBranch(cascading.pipe.Pipe pipe)" ).any();
 
-    builder = builder
-      .addBlockReference( "GroupByMerge", "groupByMerge(cascading.tuple.Fields groupFields, cascading.tuple.Fields sortFields, cascading.pipe.Pipe[] pipes)" ).any( GROUP_MERGE );
+    builder.addBlockReference( "Group", "continueBranch(String name, cascading.pipe.GroupBy groupby)" ).any();
+    builder.addBlockReference( "Group", "continueBranch(String name, cascading.pipe.CoGroup coGroup)" ).any();
+    builder.addBlockReference( "Branch", "continueBranch(String name, cascading.pipe.Pipe pipe)" ).any();
+
+    builder = addPipeBranchBuilderType( builder, "CoGroup", CoGroup.class, COGROUP, false, FACTORY );
+    builder = addPipeBranchBuilderType( builder, "HashJoin", HashJoin.class, HASH_JOIN, false, FACTORY );
+    builder = addPipeBranchBuilderType( builder, "GroupByMerge", GroupBy.class, GROUP_MERGE, true, FACTORY );
+    builder = addPipeBranchBuilderType( builder, "Merge", Merge.class, MERGE, true, FACTORY );
 
     return builder;
     }
 
-  @Override
-  protected String getFactoryClass()
-    {
-    return PIPE_FACTORY;
-    }
   }

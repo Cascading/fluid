@@ -47,7 +47,8 @@ public class SimpleTest
     {
     AssemblyBuilder.Start builder = Fluid.assembly();
 
-    Pipe rhs = builder.startBranch( "rhs" ).groupBy( Fields.ALL )
+    Pipe rhs = builder.startBranch( "rhs" )
+      .groupBy( Fields.ALL )
       .every( Fields.ALL ).aggregator( new Count() ).outgoing( Fields.ALL )
       .completeGroupBy()
       .each( Fields.ALL ).filter( new RegexFilter( "" ) )

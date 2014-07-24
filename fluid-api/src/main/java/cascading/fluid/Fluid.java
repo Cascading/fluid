@@ -22,14 +22,13 @@ package cascading.fluid;
 
 import java.lang.reflect.Type;
 
-import cascading.fluid.api.assembly.Assembly.AssemblyBuilder;
-import cascading.fluid.api.operation.Operation.OperationBuilder;
-import cascading.fluid.builder.ConcreteAssemblyHelper;
 import cascading.fluid.api.assembly.Assembly.AssemblyGenerator;
 import cascading.fluid.api.assembly.Assembly.AssemblyHelper;
+import cascading.fluid.api.operation.Operation.OperationBuilder;
 import cascading.fluid.api.operation.Operation.OperationGenerator;
 import cascading.fluid.api.operation.Operation.OperationHelper;
 import cascading.fluid.builder.AssemblyMethodHandler;
+import cascading.fluid.builder.ConcreteAssemblyHelper;
 import cascading.fluid.builder.LocalMethodLogger;
 import cascading.fluid.builder.OperationMethodHandler;
 import cascading.fluid.builder.Reflection;
@@ -40,9 +39,6 @@ import cascading.tuple.Fields;
  */
 public class Fluid
   {
-  private static AssemblyBuilder.Start assemblyStart;
-  private static OperationBuilder.Start operationStart;
-
   public static Fields fields( Comparable... fields )
     {
     return new Fields( fields );
@@ -55,26 +51,19 @@ public class Fluid
 
   public static cascading.fluid.api.assembly.Assembly.AssemblyBuilder.Start assembly()
     {
-    if( assemblyStart != null )
-      return assemblyStart;
+    AssemblyMethodHandler methodHandler = new AssemblyMethodHandler();
+    AssemblyHelper helper = Reflection.create( AssemblyHelper.class, methodHandler, ConcreteAssemblyHelper.class );
 
-    AssemblyHelper helper = new ConcreteAssemblyHelper( new AssemblyMethodHandler() );
+    ( (ConcreteAssemblyHelper) helper ).setMethodHandler( methodHandler );
 
-    assemblyStart = AssemblyGenerator.startAssembly( helper, new LocalMethodLogger() );
-
-    return assemblyStart;
+    return AssemblyGenerator.startAssembly( helper, new LocalMethodLogger() );
     }
 
   private static OperationBuilder.Start getOperationBuilder()
     {
-    if( operationStart != null )
-      return operationStart;
-
     OperationHelper operationHelper = Reflection.create( OperationHelper.class, new OperationMethodHandler() );
 
-    operationStart = OperationGenerator.build( operationHelper, new LocalMethodLogger() );
-
-    return operationStart;
+    return OperationGenerator.build( operationHelper, new LocalMethodLogger() );
     }
 
   public static cascading.fluid.api.operation.Function.FunctionBuilder<Void> function()

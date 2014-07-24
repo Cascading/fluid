@@ -25,7 +25,9 @@ import cascading.flow.FlowDef;
 import cascading.flow.local.LocalFlowConnector;
 import cascading.fluid.api.assembly.Assembly.AssemblyBuilder;
 import cascading.operation.Function;
+import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
+import cascading.pipe.joiner.OuterJoin;
 import cascading.scheme.local.TextLine;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
@@ -54,16 +56,16 @@ public class SimpleAssembliesTest
     Pipe pipe = assembly
       .startBranch( "test" )
         .each( fields( "line" ) )
-        .function(
-          function().RegexParser().fieldDeclaration( fields( "ip" ) ).patternString( "^[^ ]*" ).end()
-        )
+          .function(
+            function().RegexParser().fieldDeclaration( fields( "ip" ) ).patternString( "^[^ ]*" ).end()
+          )
         .outgoing( fields( "ip" ) )
 
         .groupBy( fields( "ip" ) )
           .every( Fields.ALL )
-          .aggregator(
-            aggregator().Count().fieldDeclaration( fields( "count" ) ).end()
-          )
+            .aggregator(
+              aggregator().Count().fieldDeclaration( fields( "count" ) ).end()
+            )
           .outgoing( fields( "ip", "count" ) )
         .completeGroupBy()
 
@@ -74,10 +76,10 @@ public class SimpleAssembliesTest
     }
 
   @Test
-  public void testSimpleMerge()
+  public void testGroupByMerge()
     {
     Tap sourceLower = new FileTap( new TextLine( new Fields( "offset", "line" ) ), "some/lower" );
-    Tap sourceUpper = new FileTap( new TextLine( new Fields( "offset", "line" ) ), "some/uppper" );
+    Tap sourceUpper = new FileTap( new TextLine( new Fields( "offset", "line" ) ), "some/upper" );
     Tap sourceLowerOffset = new FileTap( new TextLine( new Fields( "offset", "line" ) ), "some/offset" );
 
     Tap sink = new FileTap( new TextLine( new Fields( "offset", "line" ) ), "some/result", SinkMode.REPLACE );
@@ -106,8 +108,15 @@ public class SimpleAssembliesTest
         .each( fields( "line" ) ).function( splitter ).outgoing( Fields.RESULTS )
       .completeBranch();
 
+    GroupBy merge = assembly
+      .startGroupByMerge()
+        .pipes( pipes( pipeLower, pipeUpper, pipeOffset ) )
+        .groupFields( fields( "num" ) )
+        .sortFields( fields( "char" ) )
+      .createGroupByMerge();
+
     Pipe splice = assembly
-      .groupByMerge( fields( "num" ), fields( "char" ), pipes( pipeLower, pipeUpper, pipeOffset ) )
+      .continueBranch( merge )
         .every( fields( "char" ) )
           .aggregator(
             aggregator().First().fieldDeclaration( fields( "first" ) ).end()
@@ -117,7 +126,7 @@ public class SimpleAssembliesTest
           .function(
             function().Identity().fieldDeclaration( Fields.ALL ).end()
           )
-          .outgoing( Fields.RESULTS )
+        .outgoing( Fields.RESULTS )
       .completeBranch();
 
     FlowDef flowDef = flowDef()
@@ -125,6 +134,59 @@ public class SimpleAssembliesTest
       .addSource( "upper", sourceUpper )
       .addSource( "offset", sourceLowerOffset )
       .addTailSink( splice, sink );
+    // @formatter:on
+
+    Flow flow = new LocalFlowConnector().connect( flowDef );
+    }
+
+  @Test
+  public void testCoGroup() throws Exception
+    {
+    Tap sourceLower = new FileTap( new TextLine( new Fields( "offset", "line" ) ), "some/lower" );
+    Tap sourceUpper = new FileTap( new TextLine( new Fields( "offset", "line" ) ), "some/upper" );
+
+    Tap sink = new FileTap( new TextLine( new Fields( "line" ) ), "some/result", SinkMode.REPLACE );
+
+    // @formatter:off
+
+    Function splitter = function()
+      .RegexSplitter()
+      .fieldDeclaration( fields( "num", "char" ) )
+      .patternString( " " )
+      .end();
+
+    AssemblyBuilder.Start assembly = Fluid.assembly();
+
+    Pipe pipeLower = assembly
+      .startBranch( "lower" )
+      .each( fields( "line" ) ).function( splitter ).outgoing( Fields.RESULTS )
+      .completeBranch();
+
+    Pipe pipeUpper = assembly
+      .startBranch( "upper" )
+      .each( fields( "line" ) ).function( splitter ).outgoing( Fields.RESULTS )
+      .completeBranch();
+
+    Pipe splice = assembly.startCoGroup()
+      .lhs( pipeLower ).lhsGroupFields( fields( "num" ) )
+      .rhs( pipeUpper ).rhsGroupFields( fields( "num" ) )
+      .declaredFields( fields( "num1", "char1", "num2", "char2" ) )
+      .joiner( new OuterJoin() )
+      .createCoGroup();
+
+    assembly
+      .continueBranch( "result", splice )
+      .retain().retainFields( fields( "num1", "char1" )  ).end()
+      .rename().fromFields( Fields.ALL ).toFields( fields( "num", "char" ) ).end()
+      .completeBranch();
+
+    Pipe[] tails = assembly.completeAssembly();
+
+    FlowDef flowDef = flowDef()
+      .addSource( "lower", sourceLower )
+      .addSource( "upper", sourceUpper )
+      .addSink( "result", sink )
+      .addTails( tails );
     // @formatter:on
 
     Flow flow = new LocalFlowConnector().connect( flowDef );
