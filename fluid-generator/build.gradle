@@ -21,6 +21,8 @@
 dependencies {
 
   compile group: 'cascading', name: 'cascading-core', version: cascadingVersion
+//  compile group: 'cascading', name: 'cascading-xml', version: cascadingVersion
+
   compile group: 'unquietcode.tools.flapi', name: 'flapi', version: flapiVersion
 
   compile group: 'org.reflections', name: 'reflections', version: '0.9.9-RC2'

@@ -148,13 +148,14 @@ public class SimpleAssembliesTest
     Tap sink = new FileTap( new TextLine( new Fields( "line" ) ), "some/result", SinkMode.REPLACE );
 
     // @formatter:off
-
-    Function splitter = function()
+    // Factories for all Operations (Functions, Filters, Aggregators, and Buffers)
+    Function splitter = Fluid.function()
       .RegexSplitter()
       .fieldDeclaration( fields( "num", "char" ) )
       .patternString( " " )
       .end();
 
+    // An assembly builder chaining Pipes into complex assemblies
     AssemblyBuilder.Start assembly = Fluid.assembly();
 
     Pipe pipeLower = assembly
@@ -167,7 +168,8 @@ public class SimpleAssembliesTest
       .each( fields( "line" ) ).function( splitter ).outgoing( Fields.RESULTS )
       .completeBranch();
 
-    Pipe splice = assembly.startCoGroup()
+    Pipe coGroup = assembly
+      .startCoGroup()
       .lhs( pipeLower ).lhsGroupFields( fields( "num" ) )
       .rhs( pipeUpper ).rhsGroupFields( fields( "num" ) )
       .declaredFields( fields( "num1", "char1", "num2", "char2" ) )
@@ -175,7 +177,7 @@ public class SimpleAssembliesTest
       .createCoGroup();
 
     assembly
-      .continueBranch( "result", splice )
+      .continueBranch( "result", coGroup )
       .retain().retainFields( fields( "num1", "char1" )  ).end()
       .rename().fromFields( Fields.ALL ).toFields( fields( "num", "char" ) ).end()
       .completeBranch();

@@ -25,7 +25,7 @@ def generatedSrc = "$buildDir/generated-src"
 dependencies {
 
   provided group: 'cascading', name: 'cascading-core', version: cascadingVersion
-  provided group: 'cascading', name: 'cascading-xml', version: cascadingVersion
+//  provided group: 'cascading', name: 'cascading-xml', version: cascadingVersion
 
   compile group: 'unquietcode.tools.flapi', name: 'flapi-runtime', version: flapiVersion
   compile group: 'org.javassist', name: 'javassist', version: '3.18.2-GA'
@@ -41,7 +41,6 @@ dependencies {
   provided group: 'cascading', name: 'cascading-local', version: cascadingVersion
 
   testCompile group: 'junit', name: 'junit', version: '4.11'
-
 }
 
 project( ':fluid-generator' ).fluidGenerator {
@@ -59,22 +58,8 @@ javadoc {
   classpath += configurations.provided
 }
 
-task sourcesJar( type: Jar, dependsOn: classes ) {
-  description = "Package a jar of the Java sources"
-  classifier = 'sources'
+sourcesJar() {
   from sourceSets.main.allSource + files( generatedSrc )
-}
-
-task javadocJar( type: Jar, dependsOn: javadoc ) {
-  description = "Package a jar of the javadoc"
-  classifier = 'javadoc'
-  from javadoc.destinationDir
-}
-
-artifacts {
-  archives jar
-  archives sourcesJar
-  archives javadocJar
 }
 
 idea {
