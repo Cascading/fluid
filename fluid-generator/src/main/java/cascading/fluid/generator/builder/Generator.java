@@ -20,20 +20,23 @@
 
 package cascading.fluid.generator.builder;
 
-import java.beans.ConstructorProperties;
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import javax.annotation.Nullable;
 
 import cascading.fluid.generator.util.ParameterGraphs;
 import cascading.fluid.generator.util.Prefix;
 import cascading.fluid.generator.util.Text;
 import cascading.fluid.generator.util.Types;
 import cascading.pipe.Splice;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.FloydWarshallShortestPaths;
@@ -120,7 +123,10 @@ public abstract class Generator
 
       LOG.info( "adding block {}: subtype: {}", type.getSimpleName(), subType.getName() );
 
-      block = addTypeBuilderBlock( block, isFactory, subType, constructors, addReference, factoryClass, startsWithExclusive );
+      if( constructors.size() > 1 )
+        block = addTypeBuilderBlock( block, isFactory, subType, constructors, addReference, factoryClass, startsWithExclusive );
+      else
+        block = addTypeBuilderMethod( block, isFactory, subType, constructors, addReference, factoryClass, startsWithExclusive );
       }
 
     return block;
@@ -170,6 +176,30 @@ public abstract class Generator
     return ( (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>) blockBuilder )
 //      .addMethod( endMethod ).last( type )
       .endBlock();
+    }
+
+  protected <T> BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f addTypeBuilderMethod( BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block, final boolean isFactory, final Class<? extends T> type, Set<Constructor> constructors, boolean addReference, String factoryClass, Class... startsWithExclusive )
+    {
+    final DirectedGraph<Prefix<String, String, Class>, Integer> graph = ParameterGraphs.createParameterGraph( constructors, true, startsWithExclusive );
+
+    final String operationName = type.getSimpleName();
+    String methodName = ( isFactory ? operationName : Text.toFirstLower( operationName ) ); // Factory methods have upper first letter
+
+    methodName = createMethodSignature( methodName, graph );
+
+    LOG.info( "to type: {}, adding methodName: {}", type.getName(), methodName );
+
+    // method
+    MethodBuilder_2m12_4f_2m13_4f_2m14_4f_2m15_4f_2m16_4f_2m17_4f_2m18_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>> tmp = ( (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>) block )
+      .addMethod( methodName )
+      .addAnnotation( METHOD_ANNOTATION )
+      .withParameter( "factory", new ClassReference( factoryClass ) )
+      .withParameter( "creates", type )
+      .finish();
+
+    block = isFactory ? tmp.last( type ) : tmp.any(); // allow subsequent pipe elements
+
+    return block;
     }
 
   protected <T> BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f addTypeBuilderBlock( BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block, final boolean isFactory, final Class<? extends T> type, Set<Constructor> constructors, boolean addReference, String factoryClass, Class... startsWithExclusive )
@@ -283,19 +313,40 @@ public abstract class Generator
     return blockBuilder[ 0 ];
     }
 
+  private String createMethodSignature( String methodName, DirectedGraph<Prefix<String, String, Class>, Integer> graph )
+    {
+    DepthFirstIterator<Prefix<String, String, Class>, Integer> iterator = new DepthFirstIterator<Prefix<String, String, Class>, Integer>( graph, BEGIN );
+
+    String args = Joiner.on( "," ).skipNulls().join( Iterators.transform( iterator, new Function<Prefix<String, String, Class>, Object>()
+    {
+    @Nullable
+    @Override
+    public Object apply( @Nullable Prefix<String, String, Class> prefix )
+      {
+      if( prefix.getPair() == null )
+        return null;
+
+      return createMethodArg( prefix );
+      }
+    } ) );
+
+    return methodName + "(" + args + ")";
+    }
+
   private String createMethodSignature( Prefix<String, String, Class> pair )
     {
-    Class parameterType = pair.getRhs();
-    String property = pair.getLhs();
+    return pair.getLhs() + "(" + createMethodArg( pair ) + ")";
+    }
 
-    String methodSignature;
+  private String createMethodArg( Prefix<String, String, Class> pair )
+    {
+    String property = pair.getLhs();
+    Class parameterType = pair.getRhs();
 
     if( parameterType.isArray() )
-//      methodSignature = property + "(" + parameterType.getComponentType().getName() + "... " + property + ")";
-      methodSignature = property + "(" + parameterType.getComponentType().getName() + "[] " + property + ")"; // TODO: enable vargs
+    // return parameterType.getComponentType().getName() + "... " + property;
+      return parameterType.getComponentType().getName() + "[] " + property; // TODO: enable vargs
     else
-      methodSignature = property + "(" + parameterType.getName() + " " + property + ")";
-
-    return methodSignature;
+      return parameterType.getName() + " " + property;
     }
   }

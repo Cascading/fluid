@@ -135,10 +135,25 @@ public class ReflectionMethodHandler implements MethodHandler
       child.addArguments( arguments );
       }
 
-    if( !children.isEmpty() || !( self instanceof Factory ) )
+    if( !children.isEmpty() )
       return null;
 
-    Factory factory = (Factory) self;
+    Factory factory;
+
+    if( !( self instanceof Factory ) )
+      {
+      if( factoryType == null )
+        return null;
+
+      factory = (Factory) createHelperFromMethod( null, this, factoryType );
+
+      factory.setCreatesType( createsType );
+      factory.setCreateOnNext( createOnNext );
+      }
+    else
+      {
+      factory = (Factory) self;
+      }
 
     factory.addTypes( types );
     factory.addArguments( arguments );

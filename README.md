@@ -36,8 +36,8 @@ Fluid is an API library exposing the Cascading library as a
 
     assembly
       .continueBranch( "result", coGroup )
-      .retain().retainFields( fields( "num1", "char1" )  ).end()
-      .rename().fromFields( Fields.ALL ).toFields( fields( "num", "char" ) ).end()
+      .retain( fields( "num1", "char1" ) )
+      .rename( Fields.ALL, fields( "num", "char" ) )
       .completeBranch();
 
     Pipe[] tails = assembly.completeAssembly();

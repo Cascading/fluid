@@ -64,7 +64,7 @@ public class SimpleAssembliesTest
         .groupBy( fields( "ip" ) )
           .every( Fields.ALL )
             .aggregator(
-              aggregator().Count().fieldDeclaration( fields( "count" ) ).end()
+              aggregator().Count( fields( "count" ) )
             )
           .outgoing( fields( "ip", "count" ) )
         .completeGroupBy()
@@ -178,8 +178,8 @@ public class SimpleAssembliesTest
 
     assembly
       .continueBranch( "result", coGroup )
-      .retain().retainFields( fields( "num1", "char1" )  ).end()
-      .rename().fromFields( Fields.ALL ).toFields( fields( "num", "char" ) ).end()
+      .retain( fields( "num1", "char1" ) )
+      .rename( Fields.ALL, fields( "num", "char" ) )
       .completeBranch();
 
     Pipe[] tails = assembly.completeAssembly();
