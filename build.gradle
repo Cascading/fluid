@@ -37,11 +37,6 @@ allprojects() {
   apply plugin: 'idea'
   apply plugin: 'eclipse'
 
-  apply plugin: 'propdeps'
-  apply plugin: 'propdeps-maven'
-  apply plugin: 'propdeps-idea'
-  apply plugin: 'propdeps-eclipse'
-
   repositories {
     mavenLocal()
     mavenCentral()
@@ -56,6 +51,11 @@ subprojects {
 
   apply plugin: 'java'
   apply plugin: 'maven'
+
+  apply plugin: 'propdeps'
+  apply plugin: 'propdeps-maven'
+  apply plugin: 'propdeps-idea'
+  apply plugin: 'propdeps-eclipse'
 
   group = 'cascading'
   version = releaseVersion
