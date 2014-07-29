@@ -103,6 +103,8 @@ public class ParameterGraphs
         String hash = trackPath ? lastPair.getHash() : null;
         Prefix<String, String, Class> pair = new Prefix<String, String, Class>( hash, property, parameterType );
 
+        pair.addPayload( "constructor", constructor );
+
         graph.addVertex( pair );
 
         graph.addEdge( lastPair, pair );

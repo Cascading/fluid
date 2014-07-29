@@ -119,7 +119,7 @@ public class Reflection
       }
     catch( InvocationTargetException exception )
       {
-      throw new FluidException( "unable to create type for: " + constructor, exception ); // todo: unwind exception from constructor
+      throw new FluidException( "unable to create type for: " + constructor, exception.getTargetException() );
       }
     }
 

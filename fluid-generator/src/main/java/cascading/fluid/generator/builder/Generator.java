@@ -83,6 +83,8 @@ public abstract class Generator
   protected static MethodLogger methodLogger = MethodLogger.from( System.out );
   protected static Reflections reflections;
 
+  boolean enableVarArgs = true; // only used if constructor parameter was declared with varargs
+
   protected Generator()
     {
     reflections = new Reflections( DEFAULT_PACKAGE );
@@ -91,6 +93,16 @@ public abstract class Generator
   protected Generator( String... packages )
     {
     reflections = new Reflections( (Object[]) packages );
+    }
+
+  public boolean isEnableVarArgs()
+    {
+    return enableVarArgs;
+    }
+
+  public void setEnableVarArgs( boolean enableVarArgs )
+    {
+    this.enableVarArgs = enableVarArgs;
     }
 
   protected void writeBuilder( String targetPath, Descriptor build )
@@ -320,40 +332,61 @@ public abstract class Generator
     return blockBuilder[ 0 ];
     }
 
-  private String createMethodSignature( String methodName, DirectedGraph<Prefix<String, String, Class>, Integer> graph )
+  private String createMethodSignature( String methodName, final DirectedGraph<Prefix<String, String, Class>, Integer> graph )
     {
     DepthFirstIterator<Prefix<String, String, Class>, Integer> iterator = new DepthFirstIterator<Prefix<String, String, Class>, Integer>( graph, BEGIN );
 
-    String args = Joiner.on( "," ).skipNulls().join( Iterators.transform( iterator, new Function<Prefix<String, String, Class>, Object>()
-    {
-    @Nullable
-    @Override
-    public Object apply( @Nullable Prefix<String, String, Class> prefix )
-      {
-      if( prefix.getPair() == null )
-        return null;
+    String args = Joiner
+      .on( "," )
+      .skipNulls()
+      .join(
+        Iterators.transform( iterator, new Function<Prefix<String, String, Class>, Object>()
+        {
+        boolean seenArrays = false;
 
-      return createMethodArg( prefix );
-      }
-    } ) );
+        @Nullable
+        @Override
+        public Object apply( @Nullable Prefix<String, String, Class> prefix )
+          {
+          if( prefix.getPair() == null ) // is BEGIN or END
+            return null;
+
+          // allow varargs if the final parameter is an array
+          boolean isLast = Graphs.successorListOf( graph, prefix ).contains( END );
+
+          try
+            {
+            return createMethodArg( prefix, isLast && !seenArrays );
+            }
+          finally
+            {
+            seenArrays |= prefix.getRhs().isArray();
+            }
+          }
+        } )
+      );
 
     return methodName + "(" + args + ")";
     }
 
   private String createMethodSignature( Prefix<String, String, Class> pair )
     {
-    return pair.getLhs() + "(" + createMethodArg( pair ) + ")";
+    return pair.getLhs() + "(" + createMethodArg( pair, true ) + ")";
     }
 
-  private String createMethodArg( Prefix<String, String, Class> pair )
+  private String createMethodArg( Prefix<String, String, Class> pair, boolean varArgsAllowed )
     {
     String property = pair.getLhs();
     Class parameterType = pair.getRhs();
 
-    if( parameterType.isArray() )
-    // return parameterType.getComponentType().getName() + "... " + property;
-      return parameterType.getComponentType().getName() + "[] " + property; // TODO: enable vargs
-    else
+    if( !parameterType.isArray() )
       return parameterType.getName() + " " + property;
+
+    boolean isVarArg = ( (Constructor) pair.getPayload( "constructor" ) ).isVarArgs();
+
+    if( isEnableVarArgs() && isVarArg && varArgsAllowed )
+      return parameterType.getComponentType().getName() + "... " + property;
+    else
+      return parameterType.getComponentType().getName() + "[] " + property;
     }
   }

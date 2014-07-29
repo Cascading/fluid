@@ -20,6 +20,9 @@
 
 package cascading.fluid.generator.util;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 
@@ -30,6 +33,7 @@ public class Prefix<P, Lhs, Rhs>
   {
   P prefix;
   Pair<Lhs, Rhs> pair;
+  Map<String, Object> payload;
 
   public Prefix( P prefix )
     {
@@ -72,6 +76,22 @@ public class Prefix<P, Lhs, Rhs>
     HashFunction hf = Hashing.md5();
 
     return hf.newHasher().putString( toString() ).hash().toString();
+    }
+
+  public void addPayload( String key, Object value )
+    {
+    if( payload == null )
+      payload = new LinkedHashMap<String, Object>();
+
+    payload.put( key, value );
+    }
+
+  public Object getPayload( String key )
+    {
+    if( payload == null )
+      return null;
+
+    return payload.get( key );
     }
 
   @Override
