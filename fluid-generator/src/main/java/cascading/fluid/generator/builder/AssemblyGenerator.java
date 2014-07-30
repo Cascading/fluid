@@ -82,6 +82,7 @@ public class AssemblyGenerator extends Generator
       .addAnnotation( METHOD_ANNOTATION )
       .withParameter( "factory", new ClassReference( PIPE_FACTORY ) )
       .withParameter( "creates", Each.class )
+      .withParameter( "method", "each(cascading.tuple.Fields argumentSelector)" )
       .finish()
       .any( EACH )
 
@@ -98,6 +99,7 @@ public class AssemblyGenerator extends Generator
       .withParameter( "factory", new ClassReference( PIPE_FACTORY ) )
       .withParameter( "creates", GroupBy.class )
       .withParameter( "createOnNext", true )
+      .withParameter( "method", "groupBy(cascading.tuple.Fields groupFields)" )
       .finish()
       .any( GROUP )
 
@@ -105,6 +107,7 @@ public class AssemblyGenerator extends Generator
       .addAnnotation( METHOD_ANNOTATION )
       .withParameter( "factory", new ClassReference( PIPE_FACTORY ) )
       .withParameter( "creates", Every.class )
+      .withParameter( "method", "every(cascading.tuple.Fields argumentSelector)" )
       .finish()
       .any( EVERY )
 

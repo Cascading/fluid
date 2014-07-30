@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import cascading.pipe.Pipe;
+import cascading.util.Util;
 
 /**
  *
@@ -71,8 +72,6 @@ public class PipeFactory extends Factory
     if( createsType == null )
       return result;
 
-    logInfo( "creating: {}", createsType.getName() );
-
     Pipe pipe = context.branchTails.get( context.currentBranch );
 
     LinkedList<Class> newTypes = new LinkedList<Class>( types );
@@ -89,7 +88,7 @@ public class PipeFactory extends Factory
       newArgs.add( context.currentBranch );
       }
 
-    result = (Pipe) Reflection.createWith( createsType, newTypes, newArgs );
+    result = (Pipe) instantiate( newTypes, newArgs );
 
     createsType = null;
     context.currentBranch = result.getName();

@@ -46,6 +46,10 @@ public class ReflectionMethodHandler implements MethodHandler
 
   Map<String, Function<Object[], Object>> methods = new HashMap<String, Function<Object[], Object>>();
 
+  public ReflectionMethodHandler()
+    {
+    }
+
   public void addMethod( String methodName, Function<Object[], Object> function )
     {
     methods.put( methodName, function );
@@ -70,13 +74,17 @@ public class ReflectionMethodHandler implements MethodHandler
 
     Class<? extends Factory> factoryType = null;
     Class createsType = null;
+    String factoryMethod = null;
     boolean createOnNext = false;
+    String trace = null;
 
     if( annotation != null )
       {
       factoryType = annotation.factory();
       createsType = annotation.creates();
+      factoryMethod = annotation.method();
       createOnNext = annotation.createOnNext();
+      trace = Reflection.captureDebugTrace( self.getClass(), thisMethod, factoryMethod );
       }
 
     if( self instanceof Factory )
@@ -119,6 +127,7 @@ public class ReflectionMethodHandler implements MethodHandler
         Factory helper = (Factory) resultHelper;
 
         helper.setCreatesType( createsType );
+        helper.setTrace( trace );
         helper.setCreateOnNext( createOnNext );
 
         if( self instanceof Factory )
@@ -149,6 +158,7 @@ public class ReflectionMethodHandler implements MethodHandler
       factory = (Factory) createHelperFromMethod( null, this, factoryType );
 
       factory.setCreatesType( createsType );
+      factory.setTrace( trace );
       factory.setCreateOnNext( createOnNext );
       }
     else
@@ -192,4 +202,5 @@ public class ReflectionMethodHandler implements MethodHandler
     for( Object arg : args )
       LOG.debug( "arg = {}, isNull: {}", arg, ( arg == null ) );
     }
+
   }

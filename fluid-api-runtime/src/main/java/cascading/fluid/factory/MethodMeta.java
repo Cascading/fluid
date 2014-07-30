@@ -33,5 +33,7 @@ public @interface MethodMeta
 
   Class creates();
 
+  String method() default "";
+
   boolean createOnNext() default false;
   }

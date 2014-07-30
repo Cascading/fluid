@@ -21,6 +21,7 @@
 package cascading.fluid.factory;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ public class Factory
   Class<?> createsType = null;
   List<Class> types = new ArrayList<Class>();
   List<Object> arguments = new ArrayList<Object>();
+  String trace = null;
   private boolean createOnNext;
 
   public void addPrior( Factory prior )
@@ -44,6 +46,7 @@ public class Factory
       return;
 
     createsType = prior.createsType;
+    trace = prior.trace;
     types.addAll( prior.types );
     arguments.addAll( prior.arguments );
     }
@@ -56,6 +59,11 @@ public class Factory
   public void setCreateOnNext( boolean createOnNext )
     {
     this.createOnNext = createOnNext;
+    }
+
+  public void setTrace( String trace )
+    {
+    this.trace = trace;
     }
 
   public boolean isCreateOnNext()
@@ -87,13 +95,23 @@ public class Factory
 
   public Object create()
     {
-    logInfo( "creating: {}", createsType.getName() );
-
-    return Reflection.createWith( createsType, types, arguments );
+    return instantiate( types, arguments );
     }
 
   protected void logInfo( String message, Object... values )
     {
     LOG.debug( message, values );
+    }
+
+  protected Object instantiate( List<Class> types, List<Object> args )
+    {
+    logInfo( "creating: {}", createsType.getName() );
+
+    Object result = Reflection.createWith( createsType, types, args );
+
+    if( trace != null && !trace.isEmpty() )
+      Reflection.setTraceOn( result, trace );
+
+    return result;
     }
   }

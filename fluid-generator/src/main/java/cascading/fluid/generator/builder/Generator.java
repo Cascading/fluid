@@ -186,6 +186,7 @@ public abstract class Generator
       .addAnnotation( METHOD_ANNOTATION )
       .withParameter( "factory", new ClassReference( factoryClass ) )
       .withParameter( "creates", type )
+      .withParameter( "method", startMethod )
       .finish()
       .any( groupID );
 
@@ -213,6 +214,7 @@ public abstract class Generator
       .addAnnotation( METHOD_ANNOTATION )
       .withParameter( "factory", new ClassReference( factoryClass ) )
       .withParameter( "creates", type )
+      .withParameter( "method", methodName )
       .finish();
 
     block = isFactory ? tmp.last( type ) : tmp.any(); // allow subsequent pipe elements
@@ -244,6 +246,7 @@ public abstract class Generator
       .addAnnotation( METHOD_ANNOTATION )
       .withParameter( "factory", new ClassReference( factoryClass ) )
       .withParameter( "creates", type )
+      .withParameter( "method", methodName )
       .finish();
 
     block = isFactory ? tmp.last() : tmp.any(); // allow subsequent pipe elements

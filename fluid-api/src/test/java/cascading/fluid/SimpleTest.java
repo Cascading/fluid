@@ -67,8 +67,8 @@ public class SimpleTest
     assertNotNull( lhs );
     assertTrue( lhs instanceof GroupBy );
     assertNotNull( lhs.getPrevious() );
-
-    // startJoin( lhs, rhs ) etc etc
+    assertNotNull( lhs.getTrace() );
+    assertTrue( lhs.getTrace().startsWith( "groupBy(cascading.tuple.Fields groupFields)" ) );
 
     Pipe[] tails = builder.completeAssembly();
 
@@ -88,5 +88,7 @@ public class SimpleTest
     assertNotNull( dateParser );
     assertNotNull( dateParser.getFieldDeclaration() );
     assertNotNull( dateParser.getDateFormatString() );
+    assertNotNull( dateParser.getTrace() );
+    assertTrue( dateParser.getTrace().startsWith( "DateParser()" ) );
     }
   }
