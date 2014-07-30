@@ -70,4 +70,16 @@ public class Reflection
 
     return map;
     }
+
+  public static Class loadClass( String name )
+    {
+    try
+      {
+      return Thread.currentThread().getContextClassLoader().loadClass( name );
+      }
+    catch( ClassNotFoundException exception )
+      {
+      throw new RuntimeException( exception );
+      }
+    }
   }

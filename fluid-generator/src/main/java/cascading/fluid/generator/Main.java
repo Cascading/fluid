@@ -112,8 +112,11 @@ public class Main
 
   private static void invoke( File outputPath, ChildFirstURLClassLoader urlClassLoader )
     {
+    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+
     try
       {
+      Thread.currentThread().setContextClassLoader( urlClassLoader );
       Class<?> type = urlClassLoader.loadClass( Main.class.getName() );
 
       Constructor<?> constructor = type.getConstructor( File.class );
@@ -134,15 +137,19 @@ public class Main
       }
     catch( InvocationTargetException exception )
       {
-      exception.printStackTrace();
+      throw new RuntimeException( exception.getTargetException() );
       }
     catch( InstantiationException exception )
       {
-      exception.printStackTrace();
+      throw new RuntimeException( exception );
       }
     catch( IllegalAccessException exception )
       {
-      exception.printStackTrace();
+      throw new RuntimeException( exception );
+      }
+    finally
+      {
+      Thread.currentThread().setContextClassLoader( contextClassLoader );
       }
     }
 

@@ -140,21 +140,18 @@ public abstract class Generator
       {
       Set<Constructor> constructors = constructorMap.get( subType );
 
-      LOG.info( "adding block {}: subtype: {}", type.getSimpleName(), subType.getName() );
+      LOG.info( "adding block {}: subtype: {}, constructors: {}", type.getSimpleName(), subType.getName(), constructors.size() );
 
       if( constructors.size() > 1 )
         block = addTypeBuilderBlock( block, isFactory, subType, constructors, addReference, factoryClass, startsWithExclusive );
       else
-        block = addTypeBuilderMethod( block, isFactory, subType, constructors, addReference, factoryClass, startsWithExclusive );
+        block = addTypeBuilderMethod( block, isFactory, subType, constructors, factoryClass, startsWithExclusive );
       }
 
     return block;
     }
 
-  protected DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> addPipeBranchBuilderType(
-    DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder,
-    String operationName,
-    Class<? extends Splice> splice, int groupID, boolean isMerge, String factoryClass )
+  protected DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> addPipeBranchBuilderType( DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder, String operationName, Class<? extends Splice> splice, int groupID, boolean isMerge, String factoryClass )
     {
     Set<Constructor> constructors;
 
@@ -168,16 +165,18 @@ public abstract class Generator
     return builder;
     }
 
-  protected <T> DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> addPipeTypeBuilderBlock(
-    DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> block,
-    final Class<? extends T> type,
-    Set<Constructor> constructors,
-    String operationName,
-    int groupID, String factoryClass,
-    Class... startsWithExclusive )
+  protected <T> DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> addPipeTypeBuilderBlock( DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> block, final Class<? extends T> type, Set<Constructor> constructors, String operationName, int groupID, String factoryClass, Class... startsWithExclusive )
     {
     String startMethod = "start" + operationName + "()";
     String endMethod = "create" + operationName + "()";
+
+    DirectedGraph<Prefix<String, String, Class>, Integer> parameterGraph = ParameterGraphs.createParameterGraph( constructors, true, startsWithExclusive );
+
+    if( parameterGraph.vertexSet().size() == 2 ) // has no parameters
+      {
+      LOG.info( "on type: {}, skipping methodName: {}", type.getName(), endMethod );
+      return block;
+      }
 
     LOG.info( "to type: {}, adding methodName: {}", type.getName(), startMethod );
 
@@ -190,14 +189,14 @@ public abstract class Generator
       .finish()
       .any( groupID );
 
-    BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f blockBuilder = generateBlock( tmp, true, type, constructors, endMethod, startsWithExclusive );
+    BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f blockBuilder = generateBlock( tmp, true, type, endMethod, parameterGraph );
 
     return ( (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>) blockBuilder )
 //      .addMethod( endMethod ).last( type )
       .endBlock();
     }
 
-  protected <T> BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f addTypeBuilderMethod( BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block, final boolean isFactory, final Class<? extends T> type, Set<Constructor> constructors, boolean addReference, String factoryClass, Class... startsWithExclusive )
+  protected <T> BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f addTypeBuilderMethod( BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block, final boolean isFactory, final Class<? extends T> type, Set<Constructor> constructors, String factoryClass, Class... startsWithExclusive )
     {
     final DirectedGraph<Prefix<String, String, Class>, Integer> graph = ParameterGraphs.createParameterGraph( constructors, true, startsWithExclusive );
 
@@ -206,7 +205,7 @@ public abstract class Generator
 
     methodName = createMethodSignature( methodName, graph );
 
-    LOG.info( "to type: {}, adding methodName: {}", type.getName(), methodName );
+    LOG.info( "to type: {}, adding methodName: {}, params: {}", type.getName(), methodName, graph.vertexSet().size() - 2 );
 
     // method
     MethodBuilder_2m12_4f_2m13_4f_2m14_4f_2m15_4f_2m16_4f_2m17_4f_2m18_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>> tmp = ( (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>>) block )
@@ -226,6 +225,14 @@ public abstract class Generator
     final String operationName = type.getSimpleName();
     String methodName = ( isFactory ? operationName : Text.toFirstLower( operationName ) ) + "()"; // Factory methods have upper first letter
 
+    DirectedGraph<Prefix<String, String, Class>, Integer> parameterGraph = ParameterGraphs.createParameterGraph( constructors, true, startsWithExclusive );
+
+    if( parameterGraph.vertexSet().size() == 2 ) // has no parameters
+      {
+      LOG.info( "on type: {}, skipping methodName: {}", type.getName(), methodName );
+      return block;
+      }
+
     LOG.info( "to type: {}, adding methodName: {}", type.getName(), methodName );
 
     if( addReference )
@@ -241,7 +248,7 @@ public abstract class Generator
 
     block = isFactory ? tmp.last() : tmp.any(); // allow subsequent pipe elements
 
-    BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f blockBuilder = generateBlock( block, isFactory, type, constructors, "end()", startsWithExclusive );
+    BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f blockBuilder = generateBlock( block, isFactory, type, "end()", parameterGraph );
 
     // endBlock
     block = (BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>>) blockBuilder
@@ -250,13 +257,12 @@ public abstract class Generator
     return block;
     }
 
-  private <T> BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f generateBlock( BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block, final boolean isFactory, final Class<? extends T> type, Set<Constructor> constructors, final String endMethod, Class[] startsWithExclusive )
+  private <T> BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f generateBlock( BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f block, final boolean isFactory, final Class<? extends T> type, final String endMethod, final DirectedGraph<Prefix<String, String, Class>, Integer> graph )
     {
     final BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f[] blockBuilder = {
       block
     };
 
-    final DirectedGraph<Prefix<String, String, Class>, Integer> graph = ParameterGraphs.createParameterGraph( constructors, true, startsWithExclusive );
     final FloydWarshallShortestPaths<Prefix<String, String, Class>, Integer> shortestPaths = new FloydWarshallShortestPaths<Prefix<String, String, Class>, Integer>( graph );
 
     ParameterGraphs.writeDOT( type.getName(), graph );

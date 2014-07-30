@@ -20,6 +20,7 @@
 
 package cascading.fluid.generator.builder;
 
+import cascading.fluid.generator.util.Reflection;
 import cascading.pipe.CoGroup;
 import cascading.pipe.Each;
 import cascading.pipe.Every;
@@ -123,7 +124,7 @@ public class AssemblyGenerator extends Generator
     branch = branch
       .addBlockReference( "GroupBy", "groupBy(cascading.tuple.Fields groupFields, cascading.tuple.Fields sortFields)" ).any( GROUP );
 
-    branch = addSubTypeBlocks( branch, SubAssembly.class, false, false, PIPE_FACTORY, Pipe.class ); // sub-assemblies
+    branch = addSubTypeBlocks( branch, Reflection.loadClass( SubAssembly.class.getName() ), false, false, PIPE_FACTORY, Reflection.loadClass( Pipe.class.getName() ) ); // sub-assemblies
 
     builder = branch
       .addMethod( "completeBranch()" ).last( Pipe.class )
@@ -133,7 +134,7 @@ public class AssemblyGenerator extends Generator
       .addBlockReference( "Every", "every(cascading.tuple.Fields argumentSelector)" ).any()
       .addBlockReference( "Each", "each(cascading.tuple.Fields argumentSelector)" ).any();
 
-    branch = addSubTypeBlocks( branch, SubAssembly.class, false, true, PIPE_FACTORY, Pipe.class );
+    branch = addSubTypeBlocks( branch, Reflection.loadClass( SubAssembly.class.getName() ), false, true, PIPE_FACTORY, Reflection.loadClass( Pipe.class.getName() ) );
 
     builder = branch.addMethod( "completeBranch()" ).last( Pipe.class )
       .endBlock(); // branch
@@ -145,10 +146,10 @@ public class AssemblyGenerator extends Generator
     builder.addBlockReference( "Group", "continueBranch(String name, cascading.pipe.CoGroup coGroup)" ).any();
     builder.addBlockReference( "Branch", "continueBranch(String name, cascading.pipe.Pipe pipe)" ).any();
 
-    builder = addPipeBranchBuilderType( builder, "CoGroup", CoGroup.class, COGROUP, false, FACTORY );
-    builder = addPipeBranchBuilderType( builder, "HashJoin", HashJoin.class, HASH_JOIN, false, FACTORY );
-    builder = addPipeBranchBuilderType( builder, "GroupByMerge", GroupBy.class, GROUP_MERGE, true, FACTORY );
-    builder = addPipeBranchBuilderType( builder, "Merge", Merge.class, MERGE, true, FACTORY );
+    builder = addPipeBranchBuilderType( builder, "CoGroup", Reflection.loadClass( CoGroup.class.getName() ), COGROUP, false, FACTORY );
+    builder = addPipeBranchBuilderType( builder, "HashJoin", Reflection.loadClass( HashJoin.class.getName() ), HASH_JOIN, false, FACTORY );
+    builder = addPipeBranchBuilderType( builder, "GroupByMerge", Reflection.loadClass( GroupBy.class.getName() ), GROUP_MERGE, true, FACTORY );
+    builder = addPipeBranchBuilderType( builder, "Merge", Reflection.loadClass( Merge.class.getName() ), MERGE, true, FACTORY );
 
     return builder;
     }

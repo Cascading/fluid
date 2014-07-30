@@ -29,7 +29,7 @@ buildscript {
 
 apply from: 'etc/version.gradle'
 
-ext.cascadingVersion = '2.6.0-wip-dev'
+ext.cascadingVersion = '2.6.0-wip-21'
 ext.flapiVersion = '0.6-SNAPSHOT'
 
 allprojects() {
@@ -56,6 +56,9 @@ subprojects {
   apply plugin: 'propdeps-maven'
   apply plugin: 'propdeps-idea'
   apply plugin: 'propdeps-eclipse'
+
+  sourceCompatibility = 1.7
+  targetCompatibility = 1.7
 
   group = 'cascading'
   version = releaseVersion

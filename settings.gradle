@@ -21,6 +21,8 @@
 include 'fluid-generator'
 include 'fluid-api-runtime'
 include 'fluid-api'
+include 'fluid-cascading25'
 include 'fluid-cascading26'
+include 'fluid-cascading30'
 
 rootProject.name = 'fluid'

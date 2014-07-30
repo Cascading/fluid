@@ -86,6 +86,8 @@ public class Types
     {
     return getInstantiableConstructors( type, new Predicate<Constructor>()
     {
+    private Class<?> pipeType = Reflection.loadClass( Pipe.class.getName() );
+
     @Override
     public boolean apply( @Nullable Constructor constructor )
       {
@@ -94,10 +96,10 @@ public class Types
       int count = 0;
       for( Class parameterType : parameterTypes )
         {
-        if( parameterType.isArray() && Pipe.class.isAssignableFrom( parameterType.getComponentType() ) )
+        if( parameterType.isArray() && pipeType.isAssignableFrom( parameterType.getComponentType() ) )
           return true;
 
-        if( Pipe.class.isAssignableFrom( parameterType ) )
+        if( pipeType.isAssignableFrom( parameterType ) )
           count++;
         }
 

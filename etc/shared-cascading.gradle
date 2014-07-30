@@ -22,13 +22,28 @@ evaluationDependsOn( ':fluid-generator' )
 
 def generatedSrc = "$buildDir/generated-src"
 
-project( ':fluid-generator' ).fluidGenerator {
-  include = sourceSets.main.compileClasspath
-  outputDir = generatedSrc;
-}
+task fluidGenerator() {
 
+  dependsOn << project( ':fluid-generator' ).classes
+
+  ext.outputDir = generatedSrc; // allows us to set a differing version of Cascading
+  ext.include = sourceSets.main.compileClasspath;
+
+  doLast {
+
+    def path = include.asPath
+
+    file( outputDir ).mkdirs()
+
+    javaexec {
+      classpath = project( ':fluid-generator' ).sourceSets.main.runtimeClasspath
+      main = 'cascading.fluid.generator.Main'
+      args = [outputDir, path]
+    }
+  }
+}
 compileJava {
-  dependsOn << project( ':fluid-generator' ).fluidGenerator
+  dependsOn << fluidGenerator
   source file( generatedSrc )
 }
 
