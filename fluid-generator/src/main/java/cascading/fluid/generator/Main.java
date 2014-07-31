@@ -21,18 +21,10 @@
 package cascading.fluid.generator;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 import cascading.fluid.generator.builder.AssemblyGenerator;
 import cascading.fluid.generator.builder.OperationsGenerator;
-import cascading.fluid.generator.util.ChildFirstURLClassLoader;
+import cascading.fluid.generator.util.ClassLoaderRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +44,7 @@ public class Main
     LOG.info( "using classloader: {}", args.length == 2 );
 
     if( args.length == 2 )
-      runViaClassLoader( targetPath, args[ 1 ] );
+      ClassLoaderRunner.runViaClassLoader( args[ 1 ], Main.class.getName(), targetPath );
     else
       new Main( targetPath ).execute();
     }
@@ -77,91 +69,4 @@ public class Main
     new OperationsGenerator().createOperationBuilder( outputPath );
     }
 
-  private static void runViaClassLoader( String outputPath, String classpath )
-    {
-    String[] paths = classpath.split( File.pathSeparator );
-
-    Set<File> files = new LinkedHashSet<File>();
-
-    for( String path : paths )
-      files.add( new File( path ) );
-
-    runViaClassLoader( outputPath, files );
-    }
-
-  public static void runViaClassLoader( String outputPath, Set<File> files )
-    {
-    runViaClassLoader( new File( outputPath ), files );
-    }
-
-  public static void runViaClassLoader( File outputPath, Set<File> files )
-    {
-    URL[] urls = new URL[ files.size() ];
-
-    int count = 0;
-    for( File file : files )
-      {
-      LOG.info( "classpath: {}", file );
-      urls[ count++ ] = toURL( file.toURI() );
-      }
-
-    ChildFirstURLClassLoader urlClassLoader = new ChildFirstURLClassLoader( urls );
-
-    invoke( outputPath, urlClassLoader );
-    }
-
-  private static void invoke( File outputPath, ChildFirstURLClassLoader urlClassLoader )
-    {
-    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-
-    try
-      {
-      Thread.currentThread().setContextClassLoader( urlClassLoader );
-      Class<?> type = urlClassLoader.loadClass( Main.class.getName() );
-
-      Constructor<?> constructor = type.getConstructor( File.class );
-
-      Object value = constructor.newInstance( outputPath );
-
-      Method method = type.getMethod( "execute" );
-
-      method.invoke( value );
-      }
-    catch( ClassNotFoundException exception )
-      {
-      throw new RuntimeException( exception );
-      }
-    catch( NoSuchMethodException exception )
-      {
-      throw new RuntimeException( exception );
-      }
-    catch( InvocationTargetException exception )
-      {
-      throw new RuntimeException( exception.getTargetException() );
-      }
-    catch( InstantiationException exception )
-      {
-      throw new RuntimeException( exception );
-      }
-    catch( IllegalAccessException exception )
-      {
-      throw new RuntimeException( exception );
-      }
-    finally
-      {
-      Thread.currentThread().setContextClassLoader( contextClassLoader );
-      }
-    }
-
-  private static URL toURL( URI file )
-    {
-    try
-      {
-      return file.toURL();
-      }
-    catch( MalformedURLException exception )
-      {
-      throw new RuntimeException( "could not create URL for: " + file, exception );
-      }
-    }
   }

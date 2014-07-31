@@ -21,6 +21,7 @@
 dependencies {
 
   provided project( ':fluid-cascading26' )
+
   compile project( ':fluid-api-runtime' )
 
   testCompile group: 'cascading', name: 'cascading-local', version: cascadingVersion

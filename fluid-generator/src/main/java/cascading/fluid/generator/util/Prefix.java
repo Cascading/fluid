@@ -20,6 +20,7 @@
 
 package cascading.fluid.generator.util;
 
+import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -75,7 +76,7 @@ public class Prefix<P, Lhs, Rhs>
     {
     HashFunction hf = Hashing.md5();
 
-    return hf.newHasher().putString( toString() ).hash().toString();
+    return hf.newHasher().putString( toString(), Charset.forName( "UTF-8" ) ).hash().toString();
     }
 
   public void addPayload( String key, Object value )
