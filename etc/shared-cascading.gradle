@@ -18,9 +18,32 @@
  * limitations under the License.
  */
 
-include 'fluid-generator'
-include 'fluid-api-runtime'
-include 'fluid-api'
-include 'fluid-cascading26'
+evaluationDependsOn( ':fluid-generator' )
 
-rootProject.name = 'fluid'
+def generatedSrc = "$buildDir/generated-src"
+
+project( ':fluid-generator' ).fluidGenerator {
+  include = sourceSets.main.compileClasspath
+  outputDir = generatedSrc;
+}
+
+compileJava {
+  dependsOn << project( ':fluid-generator' ).fluidGenerator
+  source file( generatedSrc )
+}
+
+javadoc {
+  source = sourceSets.main.allJava + files( generatedSrc )
+  excludes = ["unquietcode"]
+  classpath += configurations.provided
+}
+
+sourcesJar() {
+  from sourceSets.main.allSource + files( generatedSrc )
+}
+
+idea {
+  module {
+    sourceDirs += file( generatedSrc )
+  }
+}

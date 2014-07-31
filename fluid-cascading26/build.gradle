@@ -18,18 +18,15 @@
  * limitations under the License.
  */
 
-package cascading.fluid.builder;
+cascadingVersion = "2.6.0-wip-+"
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+dependencies {
 
-import cascading.pipe.Pipe;
+  compile project( ':fluid-api-runtime' )
 
-/**
- *
- */
-public class Context
-  {
-  public Map<String, Pipe> branchTails = new LinkedHashMap<String, Pipe>();
-  public String currentBranch;
-  }
+  compile group: 'cascading', name: 'cascading-core', version: cascadingVersion
+  compile group: 'cascading', name: 'cascading-xml', version: cascadingVersion
+
+}
+
+apply from: '../etc/shared-cascading.gradle'

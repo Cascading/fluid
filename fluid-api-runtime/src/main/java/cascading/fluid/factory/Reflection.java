@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package cascading.fluid.builder;
+package cascading.fluid.factory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -27,14 +27,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import cascading.fluid.Fluid;
 import cascading.fluid.FluidException;
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import unquietcode.tools.flapi.runtime.MethodLogger;
 
 import static org.reflections.ReflectionUtils.getConstructors;
 import static org.reflections.ReflectionUtils.withParametersAssignableTo;

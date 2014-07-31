@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import cascading.fluid.factory.Factory;
 import cascading.fluid.factory.MethodMeta;
+import cascading.fluid.factory.Reflection;
 import com.google.common.base.Function;
 import javassist.util.proxy.MethodHandler;
 import org.slf4j.Logger;

@@ -65,6 +65,8 @@ public abstract class Generator
   {
   private static final Logger LOG = LoggerFactory.getLogger( Generator.class );
 
+  public static final String DEFAULT_PACKAGE = "cascading";
+
   public static final String METHOD_ANNOTATION = "cascading.fluid.factory.MethodMeta";
   public static final String FACTORY = "cascading.fluid.factory.Factory";
   public static final String PIPE_FACTORY = "cascading.fluid.factory.PipeFactory";
@@ -83,7 +85,12 @@ public abstract class Generator
 
   protected Generator()
     {
-    reflections = new Reflections( "cascading" );
+    reflections = new Reflections( DEFAULT_PACKAGE );
+    }
+
+  protected Generator( String... packages )
+    {
+    reflections = new Reflections( (Object[]) packages );
     }
 
   protected void writeBuilder( String targetPath, Descriptor build )

@@ -31,7 +31,7 @@ import cascading.fluid.builder.AssemblyMethodHandler;
 import cascading.fluid.builder.ConcreteAssemblyHelper;
 import cascading.fluid.builder.LocalMethodLogger;
 import cascading.fluid.builder.OperationMethodHandler;
-import cascading.fluid.builder.Reflection;
+import cascading.fluid.factory.Reflection;
 import cascading.tuple.Fields;
 
 /**

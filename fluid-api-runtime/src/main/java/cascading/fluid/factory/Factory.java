@@ -23,7 +23,6 @@ package cascading.fluid.factory;
 import java.util.ArrayList;
 import java.util.List;
 
-import cascading.fluid.builder.Reflection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

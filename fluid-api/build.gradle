@@ -18,52 +18,11 @@
  * limitations under the License.
  */
 
-evaluationDependsOn( ':fluid-generator' )
-
-def generatedSrc = "$buildDir/generated-src"
-
 dependencies {
 
-  provided group: 'cascading', name: 'cascading-core', version: cascadingVersion
-//  provided group: 'cascading', name: 'cascading-xml', version: cascadingVersion
+  provided project( ':fluid-cascading26' )
+  compile project( ':fluid-api-runtime' )
 
-  compile group: 'unquietcode.tools.flapi', name: 'flapi-runtime', version: flapiVersion
-  compile group: 'org.javassist', name: 'javassist', version: '3.18.2-GA'
-  compile group: 'org.reflections', name: 'reflections', version: '0.9.9-RC2'
-
-  compile group: 'com.google.guava', name: 'guava', version: '17.0'
-
-  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.2'
-
-  compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.2'
-  compile group: 'log4j', name: 'log4j', version: '1.2.16'
-
-  provided group: 'cascading', name: 'cascading-local', version: cascadingVersion
-
+  testCompile group: 'cascading', name: 'cascading-local', version: cascadingVersion
   testCompile group: 'junit', name: 'junit', version: '4.11'
-}
-
-project( ':fluid-generator' ).fluidGenerator {
-  outputDir = generatedSrc;
-}
-
-compileJava {
-  dependsOn << project( ':fluid-generator' ).fluidGenerator
-  source file( generatedSrc )
-}
-
-javadoc {
-  source = sourceSets.main.allJava + files( generatedSrc )
-  excludes = ["unquietcode"]
-  classpath += configurations.provided
-}
-
-sourcesJar() {
-  from sourceSets.main.allSource + files( generatedSrc )
-}
-
-idea {
-  module {
-    sourceDirs += file( generatedSrc )
-  }
 }

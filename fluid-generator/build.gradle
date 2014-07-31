@@ -20,8 +20,7 @@
 
 dependencies {
 
-  compile group: 'cascading', name: 'cascading-core', version: cascadingVersion
-//  compile group: 'cascading', name: 'cascading-xml', version: cascadingVersion
+  provided group: 'cascading', name: 'cascading-core', version: cascadingVersion
 
   compile group: 'unquietcode.tools.flapi', name: 'flapi', version: flapiVersion
 
@@ -30,22 +29,25 @@ dependencies {
 
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.2'
 
-  runtime group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.2'
-  runtime group: 'log4j', name: 'log4j', version: '1.2.16'
+  compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.2'
+  compile group: 'log4j', name: 'log4j', version: '1.2.16'
 }
 
 task fluidGenerator( dependsOn: classes ) {
 
   ext.outputDir = null;
+  ext.include = null; // allows us to set a differing version of Cascading
 
   doLast {
+
+    def path = include.asPath
 
     file( outputDir ).mkdirs()
 
     javaexec {
       classpath = sourceSets.main.runtimeClasspath
       main = 'cascading.fluid.generator.Main'
-      args = [outputDir] // outputDir
+      args = [outputDir, path]
     }
   }
 }

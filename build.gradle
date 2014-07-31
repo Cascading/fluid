@@ -29,7 +29,7 @@ buildscript {
 
 apply from: 'etc/version.gradle'
 
-ext.cascadingVersion = '2.6.0-wip-+'
+ext.cascadingVersion = '2.6.0-wip-dev'
 ext.flapiVersion = '0.6-SNAPSHOT'
 
 allprojects() {

@@ -18,9 +18,18 @@
  * limitations under the License.
  */
 
-include 'fluid-generator'
-include 'fluid-api-runtime'
-include 'fluid-api'
-include 'fluid-cascading26'
+package cascading.fluid.factory;
 
-rootProject.name = 'fluid'
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import cascading.pipe.Pipe;
+
+/**
+ *
+ */
+public class Context
+  {
+  public Map<String, Pipe> branchTails = new LinkedHashMap<String, Pipe>();
+  public String currentBranch;
+  }

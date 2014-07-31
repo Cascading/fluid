@@ -36,6 +36,11 @@ public class OperationsGenerator extends Generator
     {
     }
 
+  public OperationsGenerator( String... packages )
+    {
+    super( packages );
+    }
+
   public void createOperationBuilder( String targetPath )
     {
     DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder = getBuilder()

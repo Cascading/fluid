@@ -23,8 +23,6 @@ package cascading.fluid.factory;
 import java.util.LinkedList;
 import java.util.List;
 
-import cascading.fluid.builder.Context;
-import cascading.fluid.builder.Reflection;
 import cascading.pipe.Pipe;
 
 /**
