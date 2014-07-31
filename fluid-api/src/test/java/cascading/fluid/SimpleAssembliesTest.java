@@ -25,7 +25,12 @@ import cascading.flow.FlowDef;
 import cascading.flow.local.LocalFlowConnector;
 import cascading.fluid.api.assembly.Assembly.AssemblyBuilder;
 import cascading.operation.Function;
+import cascading.operation.Identity;
+import cascading.operation.regex.RegexSplitter;
+import cascading.pipe.CoGroup;
+import cascading.pipe.Each;
 import cascading.pipe.GroupBy;
+import cascading.pipe.HashJoin;
 import cascading.pipe.Pipe;
 import cascading.pipe.joiner.OuterJoin;
 import cascading.scheme.local.TextLine;
@@ -51,7 +56,7 @@ public class SimpleAssembliesTest
     Tap source = new FileTap( new TextLine( new Fields( "offset", "line" ) ), "some/path" );
     Tap sink = new FileTap( new TextLine( new Fields( "offset", "line" ) ), "some/otherpath", SinkMode.REPLACE );
 
-    AssemblyBuilder.Start assembly = Fluid.assembly();
+    AssemblyBuilder.Start assembly = assembly();
 
     Pipe pipe = assembly
       .startBranch( "test" )
@@ -91,7 +96,7 @@ public class SimpleAssembliesTest
         .patternString( " " )
       .end();
 
-    AssemblyBuilder.Start assembly = Fluid.assembly();
+    AssemblyBuilder.Start assembly = assembly();
 
     Pipe pipeLower = assembly
       .startBranch( "lower" )
@@ -149,14 +154,14 @@ public class SimpleAssembliesTest
 
     // @formatter:off
     // Factories for all Operations (Functions, Filters, Aggregators, and Buffers)
-    Function splitter = Fluid.function()
+    Function splitter = function()
       .RegexSplitter()
       .fieldDeclaration( fields( "num", "char" ) )
       .patternString( " " )
       .end();
 
     // An assembly builder chaining Pipes into complex assemblies
-    AssemblyBuilder.Start assembly = Fluid.assembly();
+    AssemblyBuilder.Start assembly = assembly();
 
     Pipe pipeLower = assembly
       .startBranch( "lower" )
@@ -168,12 +173,13 @@ public class SimpleAssembliesTest
       .each( fields( "line" ) ).function( splitter ).outgoing( Fields.RESULTS )
       .completeBranch();
 
+    // todo: let lhs/rhs take names and resolve them in the current assembly
     Pipe coGroup = assembly
       .startCoGroup()
-      .lhs( pipeLower ).lhsGroupFields( fields( "num" ) )
-      .rhs( pipeUpper ).rhsGroupFields( fields( "num" ) )
-      .declaredFields( fields( "num1", "char1", "num2", "char2" ) )
-      .joiner( new OuterJoin() )
+        .lhs( pipeLower ).lhsGroupFields( fields( "num" ) )
+        .rhs( pipeUpper ).rhsGroupFields( fields( "num" ) )
+        .declaredFields( fields( "num1", "char1", "num2", "char2" ) )
+        .joiner( new OuterJoin() )
       .createCoGroup();
 
     assembly
@@ -188,6 +194,105 @@ public class SimpleAssembliesTest
       .addSource( "lower", sourceLower )
       .addSource( "upper", sourceUpper )
       .addSink( "result", sink )
+      .addTails( tails );
+    // @formatter:on
+
+    Flow flow = new LocalFlowConnector().connect( flowDef );
+    }
+
+  @Test
+  public void testHashJoin() throws Exception
+    {
+    Tap sourceLower = new FileTap( new TextLine( new Fields( "offset", "line" ) ), "some/lower" );
+    Tap sourceUpper = new FileTap( new TextLine( new Fields( "offset", "line" ) ), "some/upper" );
+    Tap sourceLhs = new FileTap( new TextLine( new Fields( "offset", "line" ) ), "some/lhs" );
+    Tap sourceRhs = new FileTap( new TextLine( new Fields( "offset", "line" ) ), "some/rhs" );
+
+    Tap sink = new FileTap( new TextLine( new Fields( "line" ) ), "some/result", SinkMode.REPLACE );
+
+    // @formatter:off
+    // Factories for all Operations (Functions, Filters, Aggregators, and Buffers)
+    Function splitter = function()
+      .RegexSplitter()
+      .fieldDeclaration( fields( "num", "char" ) )
+      .patternString( " " )
+      .end();
+
+    // An assembly builder chaining Pipes into complex assemblies
+    AssemblyBuilder.Start assembly = assembly();
+
+    Pipe pipeLower = assembly
+      .startBranch( "lower" )
+      .each( fields( "line" ) ).function( splitter ).outgoing( Fields.RESULTS )
+      .completeBranch();
+
+    Pipe pipeUpper = assembly
+      .startBranch( "upper" )
+      .each( fields( "line" ) ).function( splitter ).outgoing( Fields.RESULTS )
+      .completeBranch();
+
+    Pipe pipeLhs = assembly
+      .startBranch( "lhs" )
+      .each( fields( "line" ) ).function( splitter ).outgoing( Fields.RESULTS )
+      .completeBranch();
+
+    Pipe pipeRhs = assembly
+      .startBranch( "rhs" )
+      .each( fields( "line" ) ).function( splitter ).outgoing( Fields.RESULTS )
+      .completeBranch();
+
+    Pipe upperLower = assembly
+      .startHashJoin()
+      .lhs( pipeLower ).lhsJoinFields( fields( "num" ) )
+      .rhs( pipeUpper ).rhsJoinFields( fields( "num" ) )
+      .declaredFields( fields( "numUpperLower", "charUpperLower", "num2UpperLower", "char2UpperLower" ) )
+      .createHashJoin();
+
+    upperLower = assembly
+      .continueBranch( upperLower )
+        .each( Fields.ALL ).function
+          (
+          function().Identity().fieldDeclaration( Fields.ALL ).end()
+          )
+        .outgoing( Fields.RESULTS )
+      .completeBranch();
+
+    Pipe lhsUpperLower = assembly
+      .startHashJoin()
+        .lhs( pipeLhs ).lhsJoinFields( fields( "num" ) )
+        .rhs( upperLower ).rhsJoinFields( fields( "numUpperLower" ) )
+        .declaredFields( fields( "numLhs", "charLhs", "numUpperLower", "charUpperLower", "num2UpperLower", "char2UpperLower" ) )
+      .createHashJoin();
+
+    lhsUpperLower = assembly
+      .continueBranch( lhsUpperLower )
+        .each( Fields.ALL ).function
+          (
+          function().Identity().fieldDeclaration( Fields.ALL ).end()
+          )
+        .outgoing( Fields.RESULTS )
+      .completeBranch();
+
+    assembly
+      .continueBranch
+        (
+          assembly
+            .startCoGroup()
+            .groupName( "cogrouping" )
+            .lhs( lhsUpperLower ).lhsGroupFields( fields( "numLhs" ) )
+            .rhs( pipeRhs ).rhsGroupFields( fields( "num" ) )
+            .createCoGroup()
+        )
+      .completeBranch();
+
+    Pipe[] tails = assembly.completeAssembly();
+
+    FlowDef flowDef = flowDef()
+      .addSource( "lower", sourceLower )
+      .addSource( "upper", sourceUpper )
+      .addSource( "lhs", sourceLhs )
+      .addSource( "rhs", sourceRhs )
+      .addSink( "cogrouping", sink )
       .addTails( tails );
     // @formatter:on
 
