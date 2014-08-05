@@ -60,7 +60,7 @@ to change prior to the 1.0 release.
 To use Fluid, there is no installation. All Fluid libraries are available through the [Conjars.org](http://conjars.org) 
 Maven repository.
 
-## Using
+## Learning the API
 
 Current wip Java docs can be found here:
 
@@ -71,10 +71,34 @@ Note that there is only one entry point, the `Fluid` class.
 Your IDE should offer auto complete suggestions after calling the initial factory methods. And for the most part,
 only methods will be suggested that would logically be next in the chain.
 
+## Using with Maven/Ivy/Gradle
+
+It is strongly recommended developers pull Fluid from our Maven compatible jar repository
+[Conjars.org](http://conjars.org).
+
+You can find the latest public and WIP (work in progress) releases here:
+
+*  http://conjars.org/cascading/fluid-api
+*  http://conjars.org/cascading/fluid-cascading25
+*  http://conjars.org/cascading/fluid-cascading26
+*  http://conjars.org/cascading/fluid-cascading30
+
+Two dependencies must be added to the project settings. 
+
+First, the `fluid-api` which contains the root `Fluid` class.
+
+Second, the dependency that corresponds to the version of Cascading you wish to use. This artifact already has a
+dependency on a particular version of Cascading. You can override this in your project to get a later maintenance
+release. But do not mix/match major/minor releases this way.
+
+Source and Javadoc artifacts (using the appropriate classifier) are also available through Conjars.
+
+All Fluid artifacts are built with JDK 1.7 (though they are likely JDK 1.6 source compatible).
+
 ## Design Notes
 
 The API itself and build interfaces are still under development. Please comment on the mail list for suggestions, or 
-prototype them in tests.
+prototype them in tests and pull requests.
 
 The primary goal of Fluid is: 
 
@@ -84,7 +108,7 @@ Thus our design goals are:
     
  * Easy entry and exit from the fluent API with existing Cascading objects
  * Mirror the existing Cascading library as much as possible to minimize the number of concepts to be learned
- * Allow custom Cascading classes to have fluent APIs generated within any Cascading project
+ * Allow custom Cascading classes to have fluent APIs generated within any Cascading based project
  * Provide tools to allow for (more productive) higher order 
  [internal DSLs](http://martinfowler.com/bliki/InternalDslStyle.html) to be created and distributed
 
@@ -95,6 +119,9 @@ needs.
 Code generation is possible because Cascading has a clear uniform convention to how Pipe and Operation classes are 
 defined, and through the Java `ConstructorProperties` Annotation set on every core object constructors. This 
 includes `SubAssemblies` which are treated as regular Pipes, and thus are chained.
+
+In the near term, we hope to have a gradle plugin for generating APIs from existing code to be released with those
+libraries.
               
 In time we hope Fluid will provide a base for incorporating Java 8 lambdas.              
 
