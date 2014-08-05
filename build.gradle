@@ -30,7 +30,7 @@ buildscript {
 apply from: 'etc/version.gradle'
 
 ext.cascadingVersion = '2.6.0-wip-22'
-ext.flapiVersion = '0.6-SNAPSHOT'
+ext.flapiVersion = '0.5.2'
 
 allprojects() {
 
@@ -40,8 +40,8 @@ allprojects() {
   repositories {
     mavenLocal()
     mavenCentral()
-    mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
-    mavenRepo name: 'uqc', url: 'http://www.unquietcode.com/maven/releases'
+    maven { url = 'http://conjars.org/repo/' }
+    maven { url = 'http://www.unquietcode.com/maven/releases' }
   }
 }
 

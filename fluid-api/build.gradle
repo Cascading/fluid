@@ -27,3 +27,17 @@ dependencies {
   testCompile group: 'cascading', name: 'cascading-local', version: cascadingVersion
   testCompile group: 'junit', name: 'junit', version: '4.11'
 }
+
+jar.doFirst {
+  if( !System.properties[ 'fluid.release.final' ] )
+    file( "${buildDir}/build.number.properties" ).write( "fluid.build.number=${buildNumber}" )
+}
+
+jar {
+  into( 'cascading/fluid' ) {
+    from '../version.properties'
+
+    if( !System.properties[ 'fluid.release.final' ] )
+      from "${buildDir}/build.number.properties"
+  }
+}
