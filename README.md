@@ -60,6 +60,17 @@ to change prior to the 1.0 release.
 To use Fluid, there is no installation. All Fluid libraries are available through the [Conjars.org](http://conjars.org) 
 Maven repository.
 
+## Using
+
+Current wip Java docs can be found here:
+
+  * http://docs.concurrentinc.com/fluid/1.0/javadoc/fluid-api/
+
+Note that there is only one entry point, the `Fluid` class. 
+
+Your IDE should offer auto complete suggestions after calling the initial factory methods. And for the most part,
+only methods will be suggested that would logically be next in the chain.
+
 ## Design Notes
 
 The API itself and build interfaces are still under development. Please comment on the mail list for suggestions, or 

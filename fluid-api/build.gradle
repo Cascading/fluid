@@ -20,7 +20,7 @@
 
 dependencies {
 
-  provided project( ':fluid-cascading26' )
+  provided project( ':fluid-cascading25' )
 
   compile project( ':fluid-api-runtime' )
 
@@ -39,5 +39,18 @@ jar {
 
     if( !System.properties[ 'fluid.release.final' ] )
       from "${buildDir}/build.number.properties"
+  }
+}
+
+javadoc {
+
+  exclude '**/builder/**'
+  exclude '**/util/**'
+
+  configure( options ) {
+
+    links << 'http://docs.cascading.org/cascading/2.5/cascading-core/'
+
+    linksOffline( '../../../fluid-cascading25', "http://${rootProject.s3UploadDocs.destination}javadoc/fluid-cascading25".toString() )
   }
 }

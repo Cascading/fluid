@@ -30,3 +30,12 @@ dependencies {
 }
 
 apply from: '../etc/shared-cascading.gradle'
+
+javadoc {
+  configure( options ) {
+
+    links << 'http://docs.concurrentinc.com/cascading/3.0/cascading-core/'
+
+    linksOffline( '../../../fluid-api', "http://${rootProject.s3UploadDocs.destination}javadoc/fluid-api".toString() )
+  }
+}

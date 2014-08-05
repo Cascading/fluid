@@ -28,6 +28,7 @@ buildscript {
 }
 
 apply from: 'etc/version.gradle'
+apply from: 'etc/s3Upload.gradle'
 
 ext.cascadingVersion = '2.6.0-wip-22'
 ext.flapiVersion = '0.5.2'
@@ -129,3 +130,29 @@ subprojects {
     }
   }
 }
+
+task clean( type: Delete ) {
+  delete "${rootDir}/build/"
+}
+
+task prepareRelease( type: Copy, dependsOn: ['fluid-api:build', 'fluid-api-runtime:build', 'fluid-cascading25:build', 'fluid-cascading26:build', 'fluid-cascading30:build'] ) {
+
+  s3UploadDocs.dependsOn << prepareRelease
+
+  // copy dist and apply any analytics scripts
+  def analytics = System.getProperty( 'publish.docs.analytics', '' )
+
+  from "${distDir}/javadoc/"
+  into "${s3UploadDocs.source}/javadoc/"
+
+  filter { line ->
+    line.replaceAll( "</BODY>", "${analytics}\n</BODY>" )
+  }
+}
+
+prepareRelease << {
+  logger.info( 'built all artifacts' )
+}
+
+s3UploadArtifacts.enabled = false // we aren't packaging anything
+
