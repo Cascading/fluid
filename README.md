@@ -83,7 +83,7 @@ You can find the latest public and WIP (work in progress) releases here:
 *  http://conjars.org/cascading/fluid-cascading26
 *  http://conjars.org/cascading/fluid-cascading30
 
-Two dependencies must be added to the project settings. 
+Three dependencies must be added to the project settings. 
 
 First, the `fluid-api` which contains the root `Fluid` class.
 
@@ -94,6 +94,10 @@ release. But do not mix/match major/minor releases this way.
 Source and Javadoc artifacts (using the appropriate classifier) are also available through Conjars.
 
 All Fluid artifacts are built with JDK 1.7 (though they are likely JDK 1.6 source compatible).
+
+Third, Fluid depends on [Flapi](https://github.com/UnquietCode/Flapi). If you are using Maven/Ivy/Gradle or similar
+then all you need to do is add the Maven repository at [UnquietCode.com](http://www.unquietcode.com/maven/releases)
+to your build definition and the necessary Flapi jars will be included in your project.
 
 ## Design Notes
 
