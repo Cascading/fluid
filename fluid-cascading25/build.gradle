@@ -34,7 +34,7 @@ apply from: '../etc/shared-cascading.gradle'
 javadoc {
   configure( options ) {
 
-    links << 'http://docs.cascading.org/cascading/2.5/cascading-core/'
+    links << 'http://docs.cascading.org/cascading/2.5/javadoc/cascading-core/'
 
     linksOffline( '../../../fluid-api', "http://${rootProject.s3UploadDocs.destination}javadoc/fluid-api".toString() )
   }

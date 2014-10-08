@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-cascadingVersion = "3.0.0-wip-46"
+cascadingVersion = "3.0.0-wip-51"
 
 dependencies {
 
@@ -34,7 +34,7 @@ apply from: '../etc/shared-cascading.gradle'
 javadoc {
   configure( options ) {
 
-    links << 'http://docs.concurrentinc.com/cascading/3.0/cascading-core/'
+    links << 'http://docs.concurrentinc.com/cascading/3.0/javadoc/cascading-core/'
 
     linksOffline( '../../../fluid-api', "http://${rootProject.s3UploadDocs.destination}javadoc/fluid-api".toString() )
   }

@@ -20,7 +20,7 @@
 
 dependencies {
 
-  provided project( ':fluid-cascading25' )
+  provided project( ':fluid-cascading26' )
 
   compile project( ':fluid-api-runtime' )
 
@@ -49,7 +49,7 @@ javadoc {
 
   configure( options ) {
 
-    links << 'http://docs.cascading.org/cascading/2.5/cascading-core/'
+    links << 'http://docs.cascading.org/cascading/2.6/javadoc/cascading-core/'
 
     linksOffline( '../../../fluid-cascading25', "http://${rootProject.s3UploadDocs.destination}javadoc/fluid-cascading25".toString() )
   }
