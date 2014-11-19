@@ -24,6 +24,8 @@ import cascading.operation.Aggregator;
 import cascading.operation.Buffer;
 import cascading.operation.Filter;
 import cascading.operation.Function;
+import cascading.operation.GroupAssertion;
+import cascading.operation.ValueAssertion;
 import unquietcode.tools.flapi.Descriptor;
 import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f;
 
@@ -50,8 +52,10 @@ public class OperationsGenerator extends Generator
 
     builder = addBuilderBlock( builder, Function.class, true, EACH, FACTORY );
     builder = addBuilderBlock( builder, Filter.class, true, EACH, FACTORY );
-    builder = addBuilderBlock( builder, Aggregator.class, true, EACH, FACTORY );
-    builder = addBuilderBlock( builder, Buffer.class, true, EACH, FACTORY );
+    builder = addBuilderBlock( builder, Aggregator.class, true, EVERY, FACTORY );
+    builder = addBuilderBlock( builder, Buffer.class, true, EVERY, FACTORY );
+    builder = addBuilderBlock( builder, ValueAssertion.class, true, EACH, FACTORY );
+    builder = addBuilderBlock( builder, GroupAssertion.class, true, EVERY, FACTORY );
 
     Descriptor build = builder.enableCondensedClassNames().build();
 

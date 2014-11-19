@@ -223,4 +223,34 @@ public class Fluid
     {
     return getOperationBuilder().buffer();
     }
+
+  /**
+   * Method valueAssertion returns a new {@link cascading.operation.ValueAssertion} factory builder.
+   * <p/>
+   * Unlike the assembly builder, a ValueAssertion factory builder provides a simple api for constructing
+   * known ValueAssertion types, that should ba added after an {@code each()} builder method is called.
+   * <p/>
+   * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
+   *
+   * @return a new valueAssertion builder instance
+   */
+  public static cascading.fluid.api.operation.ValueAssertion.ValueAssertionBuilder<Void> valueAssertion()
+    {
+    return getOperationBuilder().valueAssertion();
+    }
+
+  /**
+   * Method groupAssertion returns a new {@link cascading.operation.GroupAssertion} factory builder.
+   * <p/>
+   * Unlike the assembly builder, a GroupAssertion factory builder provides a simple api for constructing
+   * known GroupAssertion types, that should ba added after an {@code every()} builder method is called.
+   * <p/>
+   * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
+   *
+   * @return a new groupAssertion builder instance
+   */
+  public static cascading.fluid.api.operation.GroupAssertion.GroupAssertionBuilder<Void> groupAssertion()
+    {
+    return getOperationBuilder().groupAssertion();
+    }
   }

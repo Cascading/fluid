@@ -29,6 +29,7 @@ import cascading.fluid.api.assembly.Group.GroupHelper;
 import cascading.fluid.factory.Context;
 import cascading.fluid.factory.PipeFactory;
 import cascading.fluid.factory.Reflection;
+import cascading.pipe.Checkpoint;
 import cascading.pipe.CoGroup;
 import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
@@ -57,6 +58,11 @@ public abstract class ConcreteAssemblyHelper implements AssemblyHelper
     this.methodHandler = methodHandler;
 
     methodHandler.addMethod( "completeBranch", new CompleteBranchFunction() );
+
+    // these return immediately so don't need a lazy factory
+    // and bypassing the factory allows for arguments to be in a non-standard order (name, pipe) vs (pipe, arg)
+    methodHandler.addMethod( "pipe", new PipeFunction() );
+    methodHandler.addMethod( "checkpoint", new CheckpointFunction() );
     }
 
   @Override
@@ -144,6 +150,50 @@ public abstract class ConcreteAssemblyHelper implements AssemblyHelper
     public Object apply( @Nullable Object[] input )
       {
       return context.branchTails.get( context.currentBranch );
+      }
+    }
+
+  private class PipeFunction implements Function<Object[], Object>
+    {
+    @Nullable
+    @Override
+    public Object apply( @Nullable Object[] input )
+      {
+      Pipe pipe = context.branchTails.get( context.currentBranch );
+
+      if( input == null || input.length == 0 )
+        throw new IllegalArgumentException( "pipe name is required" );
+
+      Pipe result = new Pipe( (String) input[ 0 ], pipe );
+
+      context.branchTails.remove( context.currentBranch );
+      context.currentBranch = result.getName();
+      context.branchTails.put( result.getName(), result );
+
+      return result;
+      }
+    }
+
+  private class CheckpointFunction implements Function<Object[], Object>
+    {
+    @Nullable
+    @Override
+    public Object apply( @Nullable Object[] input )
+      {
+      Pipe pipe = context.branchTails.get( context.currentBranch );
+
+      Pipe result;
+
+      if( input == null || input.length == 0 )
+        result = new Checkpoint( pipe );
+      else
+        result = new Checkpoint( (String) input[ 0 ], pipe );
+
+      context.branchTails.remove( context.currentBranch );
+      context.currentBranch = result.getName();
+      context.branchTails.put( result.getName(), result );
+
+      return result;
       }
     }
   }

@@ -74,8 +74,7 @@ public class AssemblyGenerator extends Generator
       .startBlock( "Branch", "startBranch(String name)" ).any();
 
     branch = branch
-      .addMethod( "pipe(String name)" ).any()
-      .addMethod( "pipe(String name, cascading.pipe.Pipe previous )" ).any();
+      .addMethod( "pipe(String name)" ).any();
 
     branch = branch
       .startBlock( "Each", "each(cascading.tuple.Fields argumentSelector)" )
@@ -90,7 +89,16 @@ public class AssemblyGenerator extends Generator
       .addMethod( "outgoing(cascading.tuple.Fields outgoingSelector)" ).last()
       .endBlock() // function
 
-      .addMethod( "filter(cascading.operation.Filter filter)" ).last() // filter
+      .addMethod( "filter(cascading.operation.Filter filter)" ).last() // debug
+
+      .startBlock( "debugLevel(cascading.operation.DebugLevel debugLevel)" ).last()
+      .addMethod( "debug(cascading.operation.Debug debug)" ).last()
+      .endBlock() // debug
+
+      .startBlock( "assertionLevel(cascading.operation.AssertionLevel assertionLevel)" ).last()
+      .addMethod( "assertion(cascading.operation.ValueAssertion assertion)" ).last()
+      .endBlock() // debug
+
       .endBlock(); // each
 
     branch = branch
@@ -127,6 +135,10 @@ public class AssemblyGenerator extends Generator
     branch = branch
       .addBlockReference( "GroupBy", "groupBy(cascading.tuple.Fields groupFields, cascading.tuple.Fields sortFields)" ).any( GROUP );
 
+    branch = branch
+      .addMethod( "checkpoint(String name)" ).any()
+      .addMethod( "checkpoint()" ).any(); // not required to be named
+
     branch = addSubTypeBlocks( branch, Reflection.loadClass( SubAssembly.class.getName() ), false, false, PIPE_FACTORY, Reflection.loadClass( Pipe.class.getName() ) ); // sub-assemblies
 
     builder = branch
@@ -145,7 +157,7 @@ public class AssemblyGenerator extends Generator
     builder.addBlockReference( "Group", "continueBranch(cascading.pipe.CoGroup coGroup)" ).any();
     builder.addBlockReference( "Branch", "continueBranch(cascading.pipe.Pipe pipe)" ).any();
 
-    builder.addBlockReference( "Group", "continueBranch(String name, cascading.pipe.GroupBy groupby)" ).any();
+    builder.addBlockReference( "Group", "continueBranch(String name, cascading.pipe.GroupBy groupBy)" ).any();
     builder.addBlockReference( "Group", "continueBranch(String name, cascading.pipe.CoGroup coGroup)" ).any();
     builder.addBlockReference( "Branch", "continueBranch(String name, cascading.pipe.Pipe pipe)" ).any();
 
@@ -156,5 +168,4 @@ public class AssemblyGenerator extends Generator
 
     return builder;
     }
-
   }

@@ -21,7 +21,6 @@
 package cascading.fluid.factory;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -38,7 +37,7 @@ public class Factory
   List<Class> types = new ArrayList<Class>();
   List<Object> arguments = new ArrayList<Object>();
   String trace = null;
-  private boolean createOnNext;
+  boolean createOnNext;
 
   public void addPrior( Factory prior )
     {

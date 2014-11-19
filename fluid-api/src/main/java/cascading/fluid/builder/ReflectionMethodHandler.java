@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import cascading.fluid.factory.Factory;
 import cascading.fluid.factory.MethodMeta;
+import cascading.fluid.factory.PipeFactory;
 import cascading.fluid.factory.Reflection;
 import com.google.common.base.Function;
 import javassist.util.proxy.MethodHandler;
@@ -91,7 +92,7 @@ public class ReflectionMethodHandler implements MethodHandler
       {
       Factory factory = (Factory) self;
 
-      if( args.length == 0 ) // assumes we are at the end
+      if( annotation == null && args.length == 0 ) // assumes we are at the end
         return factory.create();
 
       if( factory.isCreateOnNext() )
@@ -122,7 +123,7 @@ public class ReflectionMethodHandler implements MethodHandler
 
       Object resultHelper = createHelperFromMethod( parameterizedType, this, factoryType );
 
-      if( factoryType != null )
+      if( resultHelper instanceof Factory ) // chain factories
         {
         Factory helper = (Factory) resultHelper;
 
@@ -150,12 +151,15 @@ public class ReflectionMethodHandler implements MethodHandler
 
     Factory factory;
 
-    if( !( self instanceof Factory ) )
+    if( annotation != null || !( self instanceof Factory ) )
       {
       if( factoryType == null )
         return null;
 
       factory = (Factory) createHelperFromMethod( null, this, factoryType );
+
+      if( factory instanceof PipeFactory && self instanceof PipeFactory )
+        ( (PipeFactory) factory ).setContext( ( (PipeFactory) self ).getContext() );
 
       factory.setCreatesType( createsType );
       factory.setTrace( trace );
@@ -202,5 +206,4 @@ public class ReflectionMethodHandler implements MethodHandler
     for( Object arg : args )
       LOG.debug( "arg = {}, isNull: {}", arg, ( arg == null ) );
     }
-
   }

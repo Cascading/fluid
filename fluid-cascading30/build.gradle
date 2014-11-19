@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-cascadingVersion = "3.0.0-wip-51"
+cascadingVersion = "3.0.0-wip-58"
 
 dependencies {
 
