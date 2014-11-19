@@ -120,6 +120,16 @@ subprojects {
             distribution 'repo'
           }
         }
+        repositories {
+          repository {
+            id 'conjars'
+            url 'http://conjars.org/repo/'
+          }
+          repository {
+            id 'unquietcode'
+            url 'http://www.unquietcode.com/maven/releases'
+          }
+        }
       }
     }
     // make sure test dependencies come first, so that maven isn't getting
