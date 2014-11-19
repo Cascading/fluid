@@ -25,12 +25,14 @@ import cascading.operation.AssertionLevel;
 import cascading.operation.Debug;
 import cascading.operation.DebugLevel;
 import cascading.operation.Identity;
+import cascading.operation.aggregator.Average;
 import cascading.operation.aggregator.Count;
 import cascading.operation.assertion.AssertMatches;
 import cascading.operation.regex.RegexFilter;
 import cascading.operation.text.DateParser;
 import cascading.pipe.Checkpoint;
 import cascading.pipe.Each;
+import cascading.pipe.Every;
 import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Coerce;
@@ -152,5 +154,26 @@ public class SimpleTest
     System.out.println( "rhs = " + rhs );
     assertNotNull( rhs );
     assertEquals( Pipe.class, rhs.getClass() );
+    }
+
+  @Test
+  public void testChainedAggregatorsBuilder()
+    {
+    AssemblyBuilder.Start builder = Fluid.assembly();
+
+    Pipe rhs = builder.startBranch( "rhs" )
+      .each( Fields.ALL ).filter( new RegexFilter( "" ) )
+      .groupBy( Fields.ALL )
+      .every( Fields.ALL ).aggregator( Fluid.aggregator().Average( fields( "avg" ) ) ).outgoing( Fields.ALL )
+      .every( Fields.ALL ).aggregator( Fluid.aggregator().Count( fields( "count" ) ) ).outgoing( Fields.ALL )
+      .completeGroupBy()
+      .completeBranch();
+
+    System.out.println( "rhs = " + rhs );
+    assertNotNull( rhs );
+    assertEquals( Every.class, rhs.getClass() );
+    assertEquals( Count.class, ( (Every) rhs ).getAggregator().getClass() );
+    assertEquals( Every.class, rhs.getPrevious()[ 0 ].getClass() );
+    assertEquals( Average.class, ( (Every) rhs.getPrevious()[ 0 ] ).getAggregator().getClass() );
     }
   }
