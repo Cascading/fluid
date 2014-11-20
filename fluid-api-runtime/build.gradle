@@ -24,10 +24,10 @@ dependencies {
 
   compile group: 'unquietcode.tools.flapi', name: 'flapi-runtime', version: flapiVersion
 
-  compile group: 'org.reflections', name: 'reflections', version: '0.9.9-RC2'
+  compile group: 'org.reflections', name: 'reflections', version: '0.9.9'
   compile group: 'org.javassist', name: 'javassist', version: '3.18.2-GA'
 
-  compile group: 'com.google.guava', name: 'guava', version: '17.0'
+  compile group: 'com.google.guava', name: 'guava', version: '18.0'
 
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
 

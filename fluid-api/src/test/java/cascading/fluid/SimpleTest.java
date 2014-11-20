@@ -121,7 +121,6 @@ public class SimpleTest
       .rename( Fields.ALL, Fields.size( 2 ) )
       .completeBranch();
 
-    System.out.println( "rhs = " + rhs );
     assertNotNull( rhs );
     assertTrue( rhs instanceof Rename );
     }
@@ -136,7 +135,6 @@ public class SimpleTest
       .checkpoint()
       .completeBranch();
 
-    System.out.println( "rhs = " + rhs );
     assertNotNull( rhs );
     assertTrue( rhs instanceof Checkpoint );
     }
@@ -151,7 +149,6 @@ public class SimpleTest
       .pipe( "rhs2" )
       .completeBranch();
 
-    System.out.println( "rhs = " + rhs );
     assertNotNull( rhs );
     assertEquals( Pipe.class, rhs.getClass() );
     }
@@ -169,7 +166,6 @@ public class SimpleTest
       .completeGroupBy()
       .completeBranch();
 
-    System.out.println( "rhs = " + rhs );
     assertNotNull( rhs );
     assertEquals( Every.class, rhs.getClass() );
     assertEquals( Count.class, ( (Every) rhs ).getAggregator().getClass() );

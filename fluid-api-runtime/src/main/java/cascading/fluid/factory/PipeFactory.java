@@ -24,7 +24,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import cascading.pipe.Pipe;
-import cascading.util.Util;
 
 /**
  *

@@ -25,7 +25,6 @@ import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-
 import javax.annotation.Nullable;
 
 import cascading.fluid.generator.util.ParameterGraphs;

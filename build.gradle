@@ -30,7 +30,7 @@ buildscript {
 apply from: 'etc/version.gradle'
 apply from: 'etc/s3Upload.gradle'
 
-ext.cascadingVersion = '2.6.0'
+ext.cascadingVersion = '2.6.1'
 ext.flapiVersion = '0.5.2'
 
 allprojects() {
