@@ -87,6 +87,20 @@ public abstract class ConcreteAssemblyHelper implements AssemblyHelper
     }
 
   @Override
+  public void continueBranch( String name, AtomicReference<BranchHelper> _helper1 )
+    {
+    if( name == null )
+      throw new IllegalArgumentException( "name may not be null" );
+
+    Pipe pipe = context.branchTails.get( name );
+
+    if( pipe == null )
+      throw new IllegalArgumentException( "given pipe name not found: " + name );
+
+    handleStart( null, pipe, _helper1, BranchHelper.class );
+    }
+
+  @Override
   public void continueBranch( String name, CoGroup coGroup, AtomicReference<GroupHelper> _helper1 )
     {
     handleStart( name, coGroup, _helper1, GroupHelper.class );

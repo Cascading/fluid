@@ -156,6 +156,7 @@ public class AssemblyGenerator extends Generator
 
     builder.addBlockReference( "Group", "continueBranch(cascading.pipe.CoGroup coGroup)" ).any();
     builder.addBlockReference( "Branch", "continueBranch(cascading.pipe.Pipe pipe)" ).any();
+    builder.addBlockReference( "Branch", "continueBranch(String name)" ).any();
 
     builder.addBlockReference( "Group", "continueBranch(String name, cascading.pipe.GroupBy groupBy)" ).any();
     builder.addBlockReference( "Group", "continueBranch(String name, cascading.pipe.CoGroup coGroup)" ).any();

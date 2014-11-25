@@ -219,4 +219,30 @@ public class SimpleTest
     assertNotNull( rhs );
     assertEquals( AggregateBy.class, rhs.getClass() );
     }
+
+  @Test
+  public void testContinueAssemblyBuilder()
+    {
+    AssemblyBuilder.Start builder = Fluid.assembly();
+
+    Pipe rhs = builder.startBranch( "rhs" )
+      .coerce().coerceFields( fields( "foo", int.class ) ).end()
+      .completeBranch();
+
+    assertNotNull( rhs );
+    assertTrue( rhs instanceof Coerce );
+
+    rhs = builder.continueBranch( "rhs" )
+      .each( Fields.ALL ).filter( new RegexFilter( "" ) )
+      .completeBranch();
+
+    assertNotNull( rhs );
+    assertTrue( rhs instanceof Each );
+    assertTrue( rhs.getPrevious()[0] instanceof Coerce );
+
+    Pipe[] tails = builder.completeAssembly();
+
+    assertNotNull( tails );
+    assertEquals( 1, tails.length );
+    }
   }
