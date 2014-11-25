@@ -5,7 +5,7 @@
 Fluid is an API library exposing the Cascading library as a 
 [Fluent API](http://en.wikipedia.org/wiki/Fluent_interface).
 
-````java
+```java
     // Factories for all Operations (Functions, Filters, Aggregators, and Buffers)
     Function splitter = Fluid.function()
       .RegexSplitter()
@@ -47,22 +47,23 @@ Fluid is an API library exposing the Cascading library as a
       .addSource( "upper", sourceUpper )
       .addSink( "result", sink )
       .addTails( tails );
-```` 
+``` 
 
 The Fluid API is generated directly from Cascading compiled libraries. 
 
-Code generation dramatically reduces the amount of maintenance required, and allows any third-party classes to also 
-have Fluent APIs generated through the build process.
+Code generation dramatically reduces the amount of maintenance required, and will ultimately allow any third-party 
+classes to also have Fluent APIs generated through the build process.
  
-Fluid is under active development on the wip-1.0 branch. This means it is currently a work in progress and subject
-to change prior to the 1.0 release.
-
 To use Fluid, there is no installation. All Fluid libraries are available through the [Conjars.org](http://conjars.org) 
 Maven repository.
 
 ## Learning the API
 
-Current wip Java docs can be found here:
+Current release Java docs can be found here:
+
+  * http://docs.cascading.org/fluid/1.0/javadoc/fluid-api/
+
+Or current wip Java docs can be found here:
 
   * http://docs.concurrentinc.com/fluid/1.0/javadoc/fluid-api/
 
@@ -81,6 +82,7 @@ You can find the latest public and WIP (work in progress) releases here:
 *  http://conjars.org/cascading/fluid-api
 *  http://conjars.org/cascading/fluid-cascading25
 *  http://conjars.org/cascading/fluid-cascading26
+*  http://conjars.org/cascading/fluid-cascading27
 *  http://conjars.org/cascading/fluid-cascading30
 
 Three dependencies must be added to the project settings. 
@@ -101,8 +103,7 @@ to your build definition and the necessary Flapi jars will be included in your p
 
 ## Design Notes
 
-The API itself and build interfaces are still under development. Please comment on the mail list for suggestions, or 
-prototype them in tests and pull requests.
+Please comment on the mail list for suggestions, or prototype them in tests and pull requests.
 
 The primary goal of Fluid is: 
 
@@ -131,14 +132,18 @@ In time we hope Fluid will provide a base for incorporating Java 8 lambdas.
 
 ## Reporting Issues
 
-The best way to report an issue is to add a new test along with the expected result set
-and submit a pull request on GitHub.
+The best way to report an issue is to mail the 
+[mailing list](https://groups.google.com/forum/?fromgroups#!forum/cascading-user) with a clear description.
+
+If verified as a potential issues, add a new test along with the expected result set and submit a pull request 
+on GitHub.
 
 Failing that, feel free to open an [issue](https://github.com/Cascading/fluid/issues) on the 
-[Cascading/Fluid](https://github.com/Cascading/fluid)
-project site or mail the [mailing list](https://groups.google.com/forum/?fromgroups#!forum/cascading-user).
+[Cascading/Fluid](https://github.com/Cascading/fluid) project site.
 
 ## Developing
+
+Fluid currently requires Gradle 1.11 to build. 
 
 Running:
 
