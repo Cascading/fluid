@@ -20,25 +20,20 @@
 
 package cascading.fluid.generator.builder;
 
-import cascading.operation.Aggregator;
-import cascading.operation.Buffer;
-import cascading.operation.Filter;
-import cascading.operation.Function;
-import cascading.operation.GroupAssertion;
-import cascading.operation.ValueAssertion;
+import cascading.pipe.assembly.AggregateBy;
 import unquietcode.tools.flapi.Descriptor;
 import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f;
 
 /**
  *
  */
-public class OperationsGenerator extends Generator
+public class SubAssembliesGenerator extends Generator
   {
-  public OperationsGenerator()
+  public SubAssembliesGenerator()
     {
     }
 
-  public OperationsGenerator( String... packages )
+  public SubAssembliesGenerator( String... packages )
     {
     super( packages );
     }
@@ -46,16 +41,11 @@ public class OperationsGenerator extends Generator
   public void createOperationBuilder( String targetPath )
     {
     DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder = getBuilder()
-      .setPackage( "cascading.fluid.api.operation" )
-      .setDescriptorName( "Operation" )
+      .setPackage( "cascading.fluid.api.subassembly" )
+      .setDescriptorName( "SubAssembly" )
       .setStartingMethodName( "build" );
 
-    builder = addBuilderBlock( builder, Function.class, true, EACH, FACTORY, true );
-    builder = addBuilderBlock( builder, Filter.class, true, EACH, FACTORY, true );
-    builder = addBuilderBlock( builder, Aggregator.class, true, EVERY, FACTORY, true );
-    builder = addBuilderBlock( builder, Buffer.class, true, EVERY, FACTORY, true );
-    builder = addBuilderBlock( builder, ValueAssertion.class, true, EACH, FACTORY, true );
-    builder = addBuilderBlock( builder, GroupAssertion.class, true, EVERY, FACTORY, true );
+    builder = addBuilderBlock( builder, AggregateBy.class, true, AGGREGATE_BY, FACTORY, false );
 
     Descriptor build = builder.enableCondensedClassNames().build();
 

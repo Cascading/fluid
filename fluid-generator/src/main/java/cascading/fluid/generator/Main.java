@@ -24,6 +24,7 @@ import java.io.File;
 
 import cascading.fluid.generator.builder.AssemblyGenerator;
 import cascading.fluid.generator.builder.OperationsGenerator;
+import cascading.fluid.generator.builder.SubAssembliesGenerator;
 import cascading.fluid.generator.util.ClassLoaderRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,6 @@ public class Main
     LOG.info( "generating api to: {}", outputPath );
     new AssemblyGenerator().createAssemblyBuilder( outputPath );
     new OperationsGenerator().createOperationBuilder( outputPath );
+    new SubAssembliesGenerator().createOperationBuilder( outputPath );
     }
-
   }

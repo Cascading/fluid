@@ -27,10 +27,14 @@ import cascading.fluid.api.assembly.Assembly.AssemblyHelper;
 import cascading.fluid.api.operation.Operation.OperationBuilder;
 import cascading.fluid.api.operation.Operation.OperationGenerator;
 import cascading.fluid.api.operation.Operation.OperationHelper;
+import cascading.fluid.api.subassembly.SubAssembly.SubAssemblyBuilder;
+import cascading.fluid.api.subassembly.SubAssembly.SubAssemblyGenerator;
+import cascading.fluid.api.subassembly.SubAssembly.SubAssemblyHelper;
 import cascading.fluid.builder.AssemblyMethodHandler;
 import cascading.fluid.builder.ConcreteAssemblyHelper;
 import cascading.fluid.builder.LocalMethodLogger;
 import cascading.fluid.builder.OperationMethodHandler;
+import cascading.fluid.builder.SubAssemblyMethodHandler;
 import cascading.fluid.factory.Reflection;
 import cascading.fluid.util.Version;
 import cascading.property.AppProps;
@@ -53,12 +57,15 @@ import cascading.tuple.Fields;
  *      .every( Fields.ALL ).aggregator( new Count() ).outgoing( Fields.ALL )
  *    .completeGroupBy()
  *     .each( Fields.ALL ).filter( new RegexFilter( "" ) )
- *       .coerce().coerceFields( fields( "foo", int.class ) ).end()
+ *       .coerce().coerceFields( Fields.fields( "foo", int.class ) ).end()
  *  .completeBranch();
  * </pre>
  * <p/>
  * Note {@code completeBranch()} is a factory, it will return a {@link cascading.pipe.Pipe} instance. Also note
  * the assembly builder is stateful, and will keep the return Pipe as a known assembly tail.
+ * <p/>
+ * {@link #fields(Comparable[])} is a convenience for {@code new Fields("...")}. Type Fields itself also has many fluent helper
+ * methods, for example {@code Fluid.fields( "average").applyTypes(long.class);}
  * <p/>
  * Calling:
  * <p/>
@@ -100,6 +107,22 @@ import cascading.tuple.Fields;
  * <p/>
  * In the first example at the top, {@code new Count()} was called. This call could have
  * been replaced with {@code function().Count().end()}.
+ * <p/>
+ * AggregateBy sub-classes also have factory helpers than can be used when adding a base
+ * {@link cascading.pipe.assembly.AggregateBy} to the pipe assembly.
+ * <p/>
+ * <pre>
+ * Pipe rhs = builder.startBranch( "rhs" )
+ *    .aggregateBy()
+ *      .groupingFields( fields( "grouping" ) )
+ *      .assemblies
+ *        (
+ *          Fluid.aggregateBy().AverageBy().valueField( fields( "value" ) ).averageField( fields( "average" ) ).end(),
+ *          Fluid.aggregateBy().SumBy().valueField( fields( "value" ) ).sumField( fields( "sum", long.class ) ).end()
+ *        )
+ *      .end() // end aggregateBy builder
+ *    .completeBranch();
+ * </pre>
  */
 public class Fluid
   {
@@ -145,7 +168,7 @@ public class Fluid
    * <p/>
    * To complete the assembly, call  {@link cascading.fluid.api.assembly.Assembly.AssemblyBuilder.Start#completeAssembly()}.
    *
-   * @return a new assembly builder instance
+   * @return a new Assembly builder instance
    */
   public static cascading.fluid.api.assembly.Assembly.AssemblyBuilder.Start assembly()
     {
@@ -172,7 +195,7 @@ public class Fluid
    * <p/>
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
-   * @return a new function builder instance
+   * @return a new Function builder instance
    */
   public static cascading.fluid.api.operation.Function.FunctionBuilder<Void> function()
     {
@@ -187,7 +210,7 @@ public class Fluid
    * <p/>
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
-   * @return a new filter builder instance
+   * @return a new Filter builder instance
    */
   public static cascading.fluid.api.operation.Filter.FilterBuilder<Void> filter()
     {
@@ -202,7 +225,7 @@ public class Fluid
    * <p/>
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
-   * @return a new aggregator builder instance
+   * @return a new Aggregator builder instance
    */
   public static cascading.fluid.api.operation.Aggregator.AggregatorBuilder<Void> aggregator()
     {
@@ -217,7 +240,7 @@ public class Fluid
    * <p/>
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
-   * @return a new buffer builder instance
+   * @return a new Buffer builder instance
    */
   public static cascading.fluid.api.operation.Buffer.BufferBuilder<Void> buffer()
     {
@@ -232,7 +255,7 @@ public class Fluid
    * <p/>
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
-   * @return a new valueAssertion builder instance
+   * @return a new ValueAssertion builder instance
    */
   public static cascading.fluid.api.operation.ValueAssertion.ValueAssertionBuilder<Void> valueAssertion()
     {
@@ -247,10 +270,33 @@ public class Fluid
    * <p/>
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
-   * @return a new groupAssertion builder instance
+   * @return a new GroupAssertion builder instance
    */
   public static cascading.fluid.api.operation.GroupAssertion.GroupAssertionBuilder<Void> groupAssertion()
     {
     return getOperationBuilder().groupAssertion();
+    }
+
+  private static SubAssemblyBuilder.Start getSubAssemblyBuilder()
+    {
+    SubAssemblyHelper subassemblyHelper = Reflection.create( SubAssemblyHelper.class, new SubAssemblyMethodHandler() );
+
+    return SubAssemblyGenerator.build( subassemblyHelper, new LocalMethodLogger() );
+    }
+
+  /**
+   * Method aggregateBy returns a new {@link cascading.pipe.assembly.AggregateBy} factory builder.
+   * <p/>
+   * Unlike the assembly builder, an AggregateBy factory builder provides a simple api for constructing
+   * known AggregateBy sub-types that should be passed to a parent {@link cascading.pipe.assembly.AggregateBy} for
+   * concurrent aggregation of multiple values.
+   * <p/>
+   * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
+   *
+   * @return a new AggregateBy builder instance
+   */
+  public static cascading.fluid.api.subassembly.AggregateBy.AggregateByBuilder<Void> aggregateBy()
+    {
+    return getSubAssemblyBuilder().aggregateBy();
     }
   }

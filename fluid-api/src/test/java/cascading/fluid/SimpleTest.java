@@ -34,7 +34,9 @@ import cascading.pipe.Checkpoint;
 import cascading.pipe.Each;
 import cascading.pipe.Every;
 import cascading.pipe.GroupBy;
+import cascading.pipe.HashJoin;
 import cascading.pipe.Pipe;
+import cascading.pipe.assembly.AggregateBy;
 import cascading.pipe.assembly.Coerce;
 import cascading.pipe.assembly.Rename;
 import cascading.tuple.Fields;
@@ -171,5 +173,50 @@ public class SimpleTest
     assertEquals( Count.class, ( (Every) rhs ).getAggregator().getClass() );
     assertEquals( Every.class, rhs.getPrevious()[ 0 ].getClass() );
     assertEquals( Average.class, ( (Every) rhs.getPrevious()[ 0 ] ).getAggregator().getClass() );
+    }
+
+  @Test
+  public void testSymbolicBuilder()
+    {
+    AssemblyBuilder.Start builder = Fluid.assembly();
+
+    Pipe lhs = builder.startBranch( "lhs" )
+      .each( Fields.ALL ).filter( new RegexFilter( "" ) )
+      .completeBranch();
+
+    Pipe rhs = builder.startBranch( "rhs" )
+      .each( Fields.ALL ).filter( new RegexFilter( "" ) )
+      .completeBranch();
+
+    // todo: support binding pipe names
+    HashJoin hashJoin = builder.startHashJoin()
+      .lhs( lhs ).lhsJoinFields( Fields.ALL )
+      .rhs( rhs ).rhsJoinFields( Fields.ALL )
+      .createHashJoin();
+
+    assertNotNull( hashJoin );
+    assertEquals( lhs, hashJoin.getPrevious()[ 0 ] );
+    assertEquals( rhs, hashJoin.getPrevious()[ 1 ] );
+    }
+
+  @Test
+  public void testAggregateByAssemblyBuilder()
+    {
+    AssemblyBuilder.Start builder = Fluid.assembly();
+
+    Pipe rhs = builder.startBranch( "rhs" )
+      .each( Fields.ALL ).filter( new RegexFilter( "" ) )
+      .aggregateBy()
+      .groupingFields( fields( "grouping" ) )
+      .assemblies
+        (
+          Fluid.aggregateBy().AverageBy().valueField( fields( "value" ) ).averageField( fields( "average" ) ).end(),
+          Fluid.aggregateBy().SumBy().valueField( fields( "value" ) ).sumField( fields( "sum", long.class ) ).end()
+        )
+      .end()
+      .completeBranch();
+
+    assertNotNull( rhs );
+    assertEquals( AggregateBy.class, rhs.getClass() );
     }
   }

@@ -51,7 +51,7 @@ public class Types
   public static final Predicate<Member> PUBLIC = ReflectionUtils.withModifier( Modifier.PUBLIC );
   public static final Predicate<Constructor> CONSTRUCTOR_PROPERTIES = ReflectionUtils.withAnnotation( ConstructorProperties.class );
 
-  public static <T> Map<Class<? extends T>, Set<Constructor>> getAllInstantiableSubTypes( Reflections reflections, Class<T> type )
+  public static <T> Map<Class<? extends T>, Set<Constructor>> getAllInstantiableSubTypes( Reflections reflections, Class<T> type, boolean allConstructors )
     {
     Map<Class<? extends T>, Set<Constructor>> types = new TreeMap<Class<? extends T>, Set<Constructor>>( new Comparator<Class<? extends T>>()
     {
@@ -68,7 +68,12 @@ public class Types
 
     for( Class<? extends T> subType : subTypes )
       {
-      Set<Constructor> constructors = getInstantiableConstructors( subType );
+      Set<Constructor> constructors;
+
+      if( allConstructors )
+        constructors = getInstantiableConstructors( subType );
+      else
+        constructors = getConstructorsWithNoPipes( subType );
 
       if( constructors.isEmpty() )
         continue;
@@ -79,6 +84,32 @@ public class Types
       }
 
     return types;
+    }
+
+  public static <T> Set<Constructor> getConstructorsWithNoPipes( Class<? extends T> type )
+    {
+    return getInstantiableConstructors( type, new Predicate<Constructor>()
+    {
+    private Class<?> pipeType = Reflection.loadClass( Pipe.class.getName() );
+
+    @Override
+    public boolean apply( @Nullable Constructor constructor )
+      {
+      Class[] parameterTypes = constructor.getParameterTypes();
+
+      int count = 0;
+      for( Class parameterType : parameterTypes )
+        {
+        if( parameterType.isArray() )
+          parameterType = parameterType.getComponentType();
+
+        if( pipeType.isAssignableFrom( parameterType ) )
+          count++;
+        }
+
+      return count == 0;
+      }
+    } );
     }
 
   public static <T> Set<Constructor> getConstructorsWithMultiplePipes( Class<? extends T> type )

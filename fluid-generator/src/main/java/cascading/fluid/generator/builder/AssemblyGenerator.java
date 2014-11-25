@@ -139,7 +139,7 @@ public class AssemblyGenerator extends Generator
       .addMethod( "checkpoint(String name)" ).any()
       .addMethod( "checkpoint()" ).any(); // not required to be named
 
-    branch = addSubTypeBlocks( branch, Reflection.loadClass( SubAssembly.class.getName() ), false, false, PIPE_FACTORY, Reflection.loadClass( Pipe.class.getName() ) ); // sub-assemblies
+    branch = addSubTypeBlocks( branch, Reflection.loadClass( SubAssembly.class.getName() ), false, false, PIPE_FACTORY, true, Reflection.loadClass( Pipe.class.getName() ) ); // sub-assemblies
 
     builder = branch
       .addMethod( "completeBranch()" ).last( Pipe.class )
@@ -149,7 +149,7 @@ public class AssemblyGenerator extends Generator
       .addBlockReference( "Every", "every(cascading.tuple.Fields argumentSelector)" ).any()
       .addBlockReference( "Each", "each(cascading.tuple.Fields argumentSelector)" ).any();
 
-    branch = addSubTypeBlocks( branch, Reflection.loadClass( SubAssembly.class.getName() ), false, true, PIPE_FACTORY, Reflection.loadClass( Pipe.class.getName() ) );
+    branch = addSubTypeBlocks( branch, Reflection.loadClass( SubAssembly.class.getName() ), false, true, PIPE_FACTORY, true, Reflection.loadClass( Pipe.class.getName() ) );
 
     builder = branch.addMethod( "completeBranch()" ).last( Pipe.class )
       .endBlock(); // branch
