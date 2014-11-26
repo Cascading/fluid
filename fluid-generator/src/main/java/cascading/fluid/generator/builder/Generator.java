@@ -183,6 +183,10 @@ public abstract class Generator
     // startBlock
     BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>> tmp = block
       .startBlock( operationName, startMethod )
+      .withDocumentation()
+      .addContent( "Create a new " + type.getSimpleName() + " pipe to the current branch with the given groupFields.\n" )
+      .addContent( "@see " + type.getName() )
+      .finish()
       .addAnnotation( METHOD_ANNOTATION )
       .withParameter( "factory", new ClassReference( factoryClass ) )
       .withParameter( "creates", type )

@@ -112,7 +112,8 @@ import cascading.tuple.Fields;
  * {@link cascading.pipe.assembly.AggregateBy} to the pipe assembly.
  * <p/>
  * <pre>
- * Pipe rhs = builder.startBranch( "rhs" )
+ * Pipe rhs = builder
+ *  .startBranch( "rhs" )
  *    .aggregateBy()
  *      .groupingFields( fields( "grouping" ) )
  *      .assemblies
@@ -120,8 +121,8 @@ import cascading.tuple.Fields;
  *          Fluid.aggregateBy().AverageBy().valueField( fields( "value" ) ).averageField( fields( "average" ) ).end(),
  *          Fluid.aggregateBy().SumBy().valueField( fields( "value" ) ).sumField( fields( "sum", long.class ) ).end()
  *        )
- *      .end() // end aggregateBy builder
- *    .completeBranch();
+ *    .end() // end aggregateBy builder
+ *  .completeBranch();
  * </pre>
  */
 public class Fluid
@@ -129,6 +130,10 @@ public class Fluid
   static
     {
     AppProps.addApplicationFramework( null, Version.getName() + ":" + Version.getVersionString() );
+    }
+
+  private Fluid()
+    {
     }
 
   /**
@@ -139,6 +144,7 @@ public class Fluid
    *
    * @param fields is a set of integer ordinals or field names.
    * @return a new Fields instance.
+   * @see cascading.tuple.Fields
    */
   public static Fields fields( Comparable... fields )
     {
@@ -151,6 +157,7 @@ public class Fluid
    * @param field is a an integer ordinal or field name.
    * @param type  is the Type of the given field
    * @return a new Fields instance.
+   * @see cascading.tuple.Fields
    */
   public static Fields fields( Comparable field, Type type )
     {
@@ -196,6 +203,7 @@ public class Fluid
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
    * @return a new Function builder instance
+   * @see cascading.operation.Function
    */
   public static cascading.fluid.api.operation.Function.FunctionBuilder<Void> function()
     {
@@ -211,6 +219,7 @@ public class Fluid
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
    * @return a new Filter builder instance
+   * @see cascading.operation.Filter
    */
   public static cascading.fluid.api.operation.Filter.FilterBuilder<Void> filter()
     {
@@ -226,6 +235,7 @@ public class Fluid
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
    * @return a new Aggregator builder instance
+   * @see cascading.operation.Aggregator
    */
   public static cascading.fluid.api.operation.Aggregator.AggregatorBuilder<Void> aggregator()
     {
@@ -241,6 +251,7 @@ public class Fluid
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
    * @return a new Buffer builder instance
+   * @see cascading.operation.Buffer
    */
   public static cascading.fluid.api.operation.Buffer.BufferBuilder<Void> buffer()
     {
@@ -256,6 +267,7 @@ public class Fluid
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
    * @return a new ValueAssertion builder instance
+   * @see cascading.operation.ValueAssertion
    */
   public static cascading.fluid.api.operation.ValueAssertion.ValueAssertionBuilder<Void> valueAssertion()
     {
@@ -271,6 +283,7 @@ public class Fluid
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
    * @return a new GroupAssertion builder instance
+   * @see cascading.operation.GroupAssertion
    */
   public static cascading.fluid.api.operation.GroupAssertion.GroupAssertionBuilder<Void> groupAssertion()
     {
@@ -294,6 +307,7 @@ public class Fluid
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
    * @return a new AggregateBy builder instance
+   * @see cascading.pipe.assembly.AggregateBy
    */
   public static cascading.fluid.api.subassembly.AggregateBy.AggregateByBuilder<Void> aggregateBy()
     {

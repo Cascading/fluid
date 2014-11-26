@@ -21,6 +21,7 @@
 package cascading.fluid.generator.builder;
 
 import cascading.fluid.generator.util.Reflection;
+import cascading.pipe.Checkpoint;
 import cascading.pipe.CoGroup;
 import cascading.pipe.Each;
 import cascading.pipe.Every;
@@ -29,8 +30,6 @@ import cascading.pipe.HashJoin;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import unquietcode.tools.flapi.ClassReference;
 import unquietcode.tools.flapi.Descriptor;
 import unquietcode.tools.flapi.builder.Block.BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f;
@@ -41,8 +40,6 @@ import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder_2m1_4f_2m2_4
  */
 public class AssemblyGenerator extends Generator
   {
-  private static final Logger LOG = LoggerFactory.getLogger( AssemblyGenerator.class );
-
   public AssemblyGenerator()
     {
     }
@@ -71,13 +68,19 @@ public class AssemblyGenerator extends Generator
   private DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> addBranchBlock( DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder )
     {
     BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>> branch = builder
-      .startBlock( "Branch", "startBranch(String name)" ).any();
+      .startBlock( "Branch", "startBranch(String name)" )
+      .withDocumentation( "Begin a new branch with the given name." )
+      .any();
 
     branch = branch
       .addMethod( "pipe(String name)" ).any();
 
     branch = branch
       .startBlock( "Each", "each(cascading.tuple.Fields argumentSelector)" )
+      .withDocumentation()
+      .addContent( "Append a new Each operator to the current branch with the given argumentSelector.\n" )
+      .addContent( "@see " + Each.class.getName() )
+      .finish()
       .addAnnotation( METHOD_ANNOTATION )
       .withParameter( "factory", new ClassReference( PIPE_FACTORY ) )
       .withParameter( "creates", Each.class )
@@ -103,6 +106,10 @@ public class AssemblyGenerator extends Generator
 
     branch = branch
       .startBlock( "GroupBy", "groupBy(cascading.tuple.Fields groupFields)" )
+      .withDocumentation()
+      .addContent( "Append a new GroupBy pipe to the current branch with the given groupFields.\n" )
+      .addContent( "@see " + GroupBy.class.getName() )
+      .finish()
       .addAnnotation( METHOD_ANNOTATION )
       .withParameter( "factory", new ClassReference( PIPE_FACTORY ) )
       .withParameter( "creates", GroupBy.class )
@@ -112,6 +119,10 @@ public class AssemblyGenerator extends Generator
       .any( GROUP )
 
       .startBlock( "Every", "every(cascading.tuple.Fields argumentSelector)" )//.after( GROUP )
+      .withDocumentation()
+      .addContent( "Append a new Every operator to the current branch with the given argumentSelector.\n" )
+      .addContent( "@see " + Every.class.getName() )
+      .finish()
       .addAnnotation( METHOD_ANNOTATION )
       .withParameter( "factory", new ClassReference( PIPE_FACTORY ) )
       .withParameter( "creates", Every.class )
@@ -136,31 +147,59 @@ public class AssemblyGenerator extends Generator
       .addBlockReference( "GroupBy", "groupBy(cascading.tuple.Fields groupFields, cascading.tuple.Fields sortFields)" ).any( GROUP );
 
     branch = branch
-      .addMethod( "checkpoint(String name)" ).any()
-      .addMethod( "checkpoint()" ).any(); // not required to be named
+      .addMethod( "checkpoint(String name)" )
+      .withDocumentation()
+      .addContent( "Append a new Checkpoint pipe to the current branch with the given name.\n" )
+      .addContent( "@see " + Checkpoint.class.getName() )
+      .finish()
+      .any()
+      .addMethod( "checkpoint()" )
+      .withDocumentation()
+      .addContent( "Append a new Checkpoint pipe to the current branch.\n" )
+      .addContent( "@see " + Checkpoint.class.getName() )
+      .finish()
+      .any(); // not required to be named
 
     branch = addSubTypeBlocks( branch, Reflection.loadClass( SubAssembly.class.getName() ), false, false, PIPE_FACTORY, true, Reflection.loadClass( Pipe.class.getName() ) ); // sub-assemblies
 
     builder = branch
-      .addMethod( "completeBranch()" ).last( Pipe.class )
+      .addMethod( "completeBranch()" )
+      .withDocumentation( "Complete the current branch and return the current tail." )
+      .last( Pipe.class )
       .endBlock(); // branch
 
-    branch = builder.startBlock( "Group", "continueBranch(cascading.pipe.GroupBy groupBy)" ).any()
+    branch = builder.startBlock( "Group", "continueBranch(cascading.pipe.GroupBy groupBy)" )
+      .withDocumentation( "Continue a branch from the given groupBy." )
+      .any()
       .addBlockReference( "Every", "every(cascading.tuple.Fields argumentSelector)" ).any()
       .addBlockReference( "Each", "each(cascading.tuple.Fields argumentSelector)" ).any();
 
     branch = addSubTypeBlocks( branch, Reflection.loadClass( SubAssembly.class.getName() ), false, true, PIPE_FACTORY, true, Reflection.loadClass( Pipe.class.getName() ) );
 
-    builder = branch.addMethod( "completeBranch()" ).last( Pipe.class )
+    builder = branch.addMethod( "completeBranch()" )
+      .withDocumentation( "Complete the current branch and return the current tail." )
+      .last( Pipe.class )
       .endBlock(); // branch
 
-    builder.addBlockReference( "Group", "continueBranch(cascading.pipe.CoGroup coGroup)" ).any();
-    builder.addBlockReference( "Branch", "continueBranch(cascading.pipe.Pipe pipe)" ).any();
-    builder.addBlockReference( "Branch", "continueBranch(String name)" ).any();
+    builder.addBlockReference( "Group", "continueBranch(cascading.pipe.CoGroup coGroup)" )
+      .withDocumentation( "Continue a branch from the given coGroup." )
+      .any();
+    builder.addBlockReference( "Branch", "continueBranch(cascading.pipe.Pipe pipe)" )
+      .withDocumentation( "Continue a branch from the given pipe." )
+      .any();
+    builder.addBlockReference( "Branch", "continueBranch(String name)" )
+      .withDocumentation( "Continue a branch with the given name." )
+      .any();
 
-    builder.addBlockReference( "Group", "continueBranch(String name, cascading.pipe.GroupBy groupBy)" ).any();
-    builder.addBlockReference( "Group", "continueBranch(String name, cascading.pipe.CoGroup coGroup)" ).any();
-    builder.addBlockReference( "Branch", "continueBranch(String name, cascading.pipe.Pipe pipe)" ).any();
+    builder.addBlockReference( "Group", "continueBranch(String name, cascading.pipe.GroupBy groupBy)" )
+      .withDocumentation( "Continue a branch from the given groupBy with the new given name." )
+      .any();
+    builder.addBlockReference( "Group", "continueBranch(String name, cascading.pipe.CoGroup coGroup)" )
+      .withDocumentation( "Continue a branch from the given coGroup with the new given name." )
+      .any();
+    builder.addBlockReference( "Branch", "continueBranch(String name, cascading.pipe.Pipe pipe)" )
+      .withDocumentation( "Continue a branch from the given pipe with the new given name." )
+      .any();
 
     builder = addPipeBranchBuilderType( builder, "CoGroup", Reflection.loadClass( CoGroup.class.getName() ), COGROUP, false, FACTORY );
     builder = addPipeBranchBuilderType( builder, "HashJoin", Reflection.loadClass( HashJoin.class.getName() ), HASH_JOIN, false, FACTORY );
