@@ -22,8 +22,6 @@ dependencies {
 
   provided group: 'cascading', name: 'cascading-core', version: cascadingVersion
 
-  compile group: 'unquietcode.tools.flapi', name: 'flapi-runtime', version: flapiVersion
-
   compile group: 'org.reflections', name: 'reflections', version: '0.9.9'
   compile group: 'org.javassist', name: 'javassist', version: '3.18.2-GA'
 

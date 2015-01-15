@@ -106,12 +106,6 @@ Source and Javadoc artifacts (using the appropriate classifier) are also availab
 
 All Fluid artifacts are built with JDK 1.7 (though they are likely JDK 1.6 source compatible).
 
-Third, Fluid depends on [Flapi](https://github.com/UnquietCode/Flapi). If you are using Maven/Ivy/Gradle or similar
-then you may need to add the Maven repository at http://www.unquietcode.com/maven/releases
-to your build definition and the necessary Flapi jars will be included in your project.
-
-Flapi is also hosted on Conjars, so the above typically isn't necessary.
-
 ## Design Notes
 
 Please comment on the mail list for suggestions, or prototype them in tests and pull requests.

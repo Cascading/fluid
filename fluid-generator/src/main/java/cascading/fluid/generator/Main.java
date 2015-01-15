@@ -28,6 +28,7 @@ import cascading.fluid.generator.builder.SubAssembliesGenerator;
 import cascading.fluid.generator.util.ClassLoaderRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import unquietcode.tools.flapi.ExtractRuntime;
 
 /**
  *
@@ -69,5 +70,6 @@ public class Main
     new AssemblyGenerator().createAssemblyBuilder( outputPath );
     new OperationsGenerator().createOperationBuilder( outputPath );
     new SubAssembliesGenerator().createOperationBuilder( outputPath );
+    ExtractRuntime.writeRequiredSources( outputPath );
     }
   }
