@@ -21,8 +21,7 @@
 package cascading.fluid.generator.builder;
 
 import cascading.pipe.assembly.AggregateBy;
-import unquietcode.tools.flapi.Descriptor;
-import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f;
+import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder;
 
 /**
  *
@@ -40,16 +39,16 @@ public class SubAssembliesGenerator extends Generator
 
   public void createOperationBuilder( String targetPath )
     {
-    DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder = getBuilder()
-      .setPackage( "cascading.fluid.api.subassembly" )
+    DescriptorBuilder.Start<?> builder = getBuilder();
+
+    addBuilderBlock( builder, AggregateBy.class, true, AGGREGATE_BY, FACTORY, false );
+
+    builder
+      .setPackage( "cascading.fluid.internal.subassembly" )
       .setDescriptorName( "SubAssembly" )
       .setStartingMethodName( "build" );
 
-    builder = addBuilderBlock( builder, AggregateBy.class, true, AGGREGATE_BY, FACTORY, false );
-
-    Descriptor build = builder.enableCondensedClassNames().build();
-
-    writeBuilder( targetPath, build );
+    completeAndWriteBuilder( targetPath, builder );
     }
 
   }

@@ -238,7 +238,7 @@ public class SimpleTest
 
     assertNotNull( rhs );
     assertTrue( rhs instanceof Each );
-    assertTrue( rhs.getPrevious()[0] instanceof Coerce );
+    assertTrue( rhs.getPrevious()[ 0 ] instanceof Coerce );
 
     Pipe[] tails = builder.completeAssembly();
 

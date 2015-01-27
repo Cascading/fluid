@@ -23,12 +23,12 @@ package cascading.fluid.builder;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
-import cascading.fluid.api.assembly.Assembly.AssemblyHelper;
-import cascading.fluid.api.assembly.Branch.BranchHelper;
-import cascading.fluid.api.assembly.Group.GroupHelper;
 import cascading.fluid.factory.Context;
 import cascading.fluid.factory.PipeFactory;
 import cascading.fluid.factory.Reflection;
+import cascading.fluid.internal.assembly.Assembly.AssemblyHelper;
+import cascading.fluid.internal.assembly.Branch.BranchHelper;
+import cascading.fluid.internal.assembly.Group.GroupHelper;
 import cascading.pipe.Checkpoint;
 import cascading.pipe.CoGroup;
 import cascading.pipe.GroupBy;

@@ -20,22 +20,33 @@
 
 package cascading.fluid;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 
-import cascading.fluid.api.assembly.Assembly.AssemblyGenerator;
-import cascading.fluid.api.assembly.Assembly.AssemblyHelper;
 import cascading.fluid.api.operation.Operation.OperationBuilder;
-import cascading.fluid.api.operation.Operation.OperationGenerator;
-import cascading.fluid.api.operation.Operation.OperationHelper;
 import cascading.fluid.api.subassembly.SubAssembly.SubAssemblyBuilder;
-import cascading.fluid.api.subassembly.SubAssembly.SubAssemblyGenerator;
-import cascading.fluid.api.subassembly.SubAssembly.SubAssemblyHelper;
 import cascading.fluid.builder.AssemblyMethodHandler;
 import cascading.fluid.builder.ConcreteAssemblyHelper;
 import cascading.fluid.builder.LocalMethodLogger;
 import cascading.fluid.builder.OperationMethodHandler;
 import cascading.fluid.builder.SubAssemblyMethodHandler;
 import cascading.fluid.factory.Reflection;
+import cascading.fluid.internal.assembly.Assembly.AssemblyBuilder;
+import cascading.fluid.internal.assembly.Assembly.AssemblyGenerator;
+import cascading.fluid.internal.assembly.Assembly.AssemblyHelper;
+import cascading.fluid.internal.operation.Aggregator.AggregatorBuilder;
+import cascading.fluid.internal.operation.Buffer.BufferBuilder;
+import cascading.fluid.internal.operation.Filter.FilterBuilder;
+import cascading.fluid.internal.operation.Function.FunctionBuilder;
+import cascading.fluid.internal.operation.GroupAssertion.GroupAssertionBuilder;
+import cascading.fluid.internal.operation.Operation.OperationGenerator;
+import cascading.fluid.internal.operation.Operation.OperationHelper;
+import cascading.fluid.internal.operation.ValueAssertion.ValueAssertionBuilder;
+import cascading.fluid.internal.subassembly.AggregateBy.AggregateByBuilder;
+import cascading.fluid.internal.subassembly.SubAssembly.SubAssemblyGenerator;
+import cascading.fluid.internal.subassembly.SubAssembly.SubAssemblyHelper;
 import cascading.fluid.util.Version;
 import cascading.property.AppProps;
 import cascading.tuple.Fields;
@@ -184,14 +195,17 @@ public class Fluid
 
     ( (ConcreteAssemblyHelper) helper ).setMethodHandler( methodHandler );
 
-    return AssemblyGenerator.startAssembly( helper, new LocalMethodLogger() );
+    AssemblyBuilder.Start<Void> builder = AssemblyGenerator.startAssembly( helper, new LocalMethodLogger() );
+    return simpleProxy( cascading.fluid.api.assembly.Assembly.AssemblyBuilder.Start.class, builder );
     }
 
   private static OperationBuilder.Start getOperationBuilder()
     {
     OperationHelper operationHelper = Reflection.create( OperationHelper.class, new OperationMethodHandler() );
+    cascading.fluid.internal.operation.Operation.OperationBuilder.Start<Void> builder
+      = OperationGenerator.build( operationHelper, new LocalMethodLogger() );
 
-    return OperationGenerator.build( operationHelper, new LocalMethodLogger() );
+    return simpleProxy( OperationBuilder.Start.class, builder );
     }
 
   /**
@@ -207,7 +221,8 @@ public class Fluid
    */
   public static cascading.fluid.api.operation.Function.FunctionBuilder<Void> function()
     {
-    return getOperationBuilder().function();
+    FunctionBuilder.Start<Void> builder = getOperationBuilder().function();
+    return simpleProxy( cascading.fluid.api.operation.Function.FunctionBuilder.class, builder );
     }
 
   /**
@@ -223,7 +238,8 @@ public class Fluid
    */
   public static cascading.fluid.api.operation.Filter.FilterBuilder<Void> filter()
     {
-    return getOperationBuilder().filter();
+    FilterBuilder.Start<Void> builder = getOperationBuilder().filter();
+    return simpleProxy( cascading.fluid.api.operation.Filter.FilterBuilder.class, builder );
     }
 
   /**
@@ -239,7 +255,8 @@ public class Fluid
    */
   public static cascading.fluid.api.operation.Aggregator.AggregatorBuilder<Void> aggregator()
     {
-    return getOperationBuilder().aggregator();
+    AggregatorBuilder.Start<Void> builder = getOperationBuilder().aggregator();
+    return simpleProxy( cascading.fluid.api.operation.Aggregator.AggregatorBuilder.class, builder );
     }
 
   /**
@@ -255,7 +272,8 @@ public class Fluid
    */
   public static cascading.fluid.api.operation.Buffer.BufferBuilder<Void> buffer()
     {
-    return getOperationBuilder().buffer();
+    BufferBuilder.Start<Void> builder = getOperationBuilder().buffer();
+    return simpleProxy( cascading.fluid.api.operation.Buffer.BufferBuilder.class, builder );
     }
 
   /**
@@ -271,7 +289,8 @@ public class Fluid
    */
   public static cascading.fluid.api.operation.ValueAssertion.ValueAssertionBuilder<Void> valueAssertion()
     {
-    return getOperationBuilder().valueAssertion();
+    ValueAssertionBuilder.Start<Void> builder = getOperationBuilder().valueAssertion();
+    return simpleProxy( cascading.fluid.api.operation.ValueAssertion.ValueAssertionBuilder.class, builder );
     }
 
   /**
@@ -287,14 +306,17 @@ public class Fluid
    */
   public static cascading.fluid.api.operation.GroupAssertion.GroupAssertionBuilder<Void> groupAssertion()
     {
-    return getOperationBuilder().groupAssertion();
+    GroupAssertionBuilder.Start<Void> builder = getOperationBuilder().groupAssertion();
+    return simpleProxy( cascading.fluid.api.operation.GroupAssertion.GroupAssertionBuilder.class, builder );
     }
 
   private static SubAssemblyBuilder.Start getSubAssemblyBuilder()
     {
     SubAssemblyHelper subassemblyHelper = Reflection.create( SubAssemblyHelper.class, new SubAssemblyMethodHandler() );
+    cascading.fluid.internal.subassembly.SubAssembly.SubAssemblyBuilder.Start<Void> builder
+      = SubAssemblyGenerator.build( subassemblyHelper, new LocalMethodLogger() );
 
-    return SubAssemblyGenerator.build( subassemblyHelper, new LocalMethodLogger() );
+    return simpleProxy( SubAssemblyBuilder.Start.class, builder );
     }
 
   /**
@@ -311,6 +333,20 @@ public class Fluid
    */
   public static cascading.fluid.api.subassembly.AggregateBy.AggregateByBuilder<Void> aggregateBy()
     {
-    return getSubAssemblyBuilder().aggregateBy();
+    AggregateByBuilder.Start<Void> builder = getSubAssemblyBuilder().aggregateBy();
+    return simpleProxy( cascading.fluid.api.subassembly.AggregateBy.AggregateByBuilder.class, builder );
+    }
+
+  @SuppressWarnings( "unchecked" )
+  private static <T> T simpleProxy( final Class<?> proxyInterface, final Object target )
+    {
+    return (T) Proxy.newProxyInstance( Thread.currentThread().getContextClassLoader(), new Class[]{
+      proxyInterface}, new InvocationHandler()
+    {
+    public Object invoke( Object proxy, Method method, Object[] args ) throws Throwable
+      {
+      return method.invoke( target, args );
+      }
+    } );
     }
   }

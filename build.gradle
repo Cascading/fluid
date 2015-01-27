@@ -31,7 +31,7 @@ apply from: 'etc/version.gradle'
 apply from: 'etc/s3Upload.gradle'
 
 ext.cascadingVersion = '2.6.1'
-ext.flapiVersion = '0.5.2'
+ext.flapiVersion = '0.7.3'
 
 allprojects() {
 
@@ -145,6 +145,10 @@ task clean( type: Delete ) {
   delete "${rootDir}/build/"
 }
 
+task wrapper( type: Wrapper ) {
+  gradleVersion = '1.12'
+}
+
 task prepareRelease( type: Copy, dependsOn: ['fluid-api:build', 'fluid-api-runtime:build', 'fluid-cascading25:build', 'fluid-cascading26:build', 'fluid-cascading30:build'] ) {
 
   s3UploadDocs.dependsOn << prepareRelease
@@ -165,4 +169,3 @@ prepareRelease << {
 }
 
 s3UploadArtifacts.enabled = false // we aren't packaging anything
-

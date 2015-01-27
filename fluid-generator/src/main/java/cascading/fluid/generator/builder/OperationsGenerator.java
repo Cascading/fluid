@@ -26,8 +26,7 @@ import cascading.operation.Filter;
 import cascading.operation.Function;
 import cascading.operation.GroupAssertion;
 import cascading.operation.ValueAssertion;
-import unquietcode.tools.flapi.Descriptor;
-import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f;
+import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder;
 
 /**
  *
@@ -45,21 +44,21 @@ public class OperationsGenerator extends Generator
 
   public void createOperationBuilder( String targetPath )
     {
-    DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder = getBuilder()
-      .setPackage( "cascading.fluid.api.operation" )
+    DescriptorBuilder.Start<?> builder = getBuilder();
+
+    addBuilderBlock( builder, Function.class, true, EACH, FACTORY, true );
+    addBuilderBlock( builder, Filter.class, true, EACH, FACTORY, true );
+    addBuilderBlock( builder, Aggregator.class, true, EVERY, FACTORY, true );
+    addBuilderBlock( builder, Buffer.class, true, EVERY, FACTORY, true );
+    addBuilderBlock( builder, ValueAssertion.class, true, EACH, FACTORY, true );
+    addBuilderBlock( builder, GroupAssertion.class, true, EVERY, FACTORY, true );
+
+    builder
+      .setPackage( "cascading.fluid.internal.operation" )
       .setDescriptorName( "Operation" )
       .setStartingMethodName( "build" );
 
-    builder = addBuilderBlock( builder, Function.class, true, EACH, FACTORY, true );
-    builder = addBuilderBlock( builder, Filter.class, true, EACH, FACTORY, true );
-    builder = addBuilderBlock( builder, Aggregator.class, true, EVERY, FACTORY, true );
-    builder = addBuilderBlock( builder, Buffer.class, true, EVERY, FACTORY, true );
-    builder = addBuilderBlock( builder, ValueAssertion.class, true, EACH, FACTORY, true );
-    builder = addBuilderBlock( builder, GroupAssertion.class, true, EVERY, FACTORY, true );
-
-    Descriptor build = builder.enableCondensedClassNames().build();
-
-    writeBuilder( targetPath, build );
+    completeAndWriteBuilder( targetPath, builder );
     }
 
   }

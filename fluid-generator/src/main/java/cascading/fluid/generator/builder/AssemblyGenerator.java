@@ -31,9 +31,8 @@ import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import unquietcode.tools.flapi.ClassReference;
-import unquietcode.tools.flapi.Descriptor;
-import unquietcode.tools.flapi.builder.Block.BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f;
-import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f;
+import unquietcode.tools.flapi.builder.Block.BlockBuilder;
+import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder;
 
 /**
  *
@@ -51,23 +50,23 @@ public class AssemblyGenerator extends Generator
 
   public void createAssemblyBuilder( String targetPath )
     {
-    DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder = getBuilder()
-      .setPackage( "cascading.fluid.api.assembly" )
+    DescriptorBuilder.Start<?> builder = getBuilder();
+
+    addBranchBlock( builder );
+
+    builder.addMethod( "completeAssembly()" ).last( Pipe[].class ); // tails
+
+    builder
+      .setPackage( "cascading.fluid.internal.assembly" )
       .setDescriptorName( "Assembly" )
       .setStartingMethodName( "startAssembly" );
 
-    builder = addBranchBlock( builder );
-
-    builder = builder.addMethod( "completeAssembly()" ).last( Pipe[].class ); // tails
-
-    Descriptor build = builder.enableCondensedClassNames().build();
-
-    writeBuilder( targetPath, build );
+    completeAndWriteBuilder( targetPath, builder );
     }
 
-  private DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> addBranchBlock( DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void> builder )
+  private void addBranchBlock( DescriptorBuilder.Start<?> builder )
     {
-    BlockBuilder_2m1_4f_2m2_4f_2m3_4f_2m10_4f_2m11_4f<DescriptorBuilder_2m1_4f_2m2_4f_2m3_4f_2m4_4f_2m7_4f_2m8_4f_2m10_4f_2m11_4f<Void>> branch = builder
+    BlockBuilder.Start<?> branch = builder
       .startBlock( "Branch", "startBranch(String name)" )
       .withDocumentation( "Begin a new branch with the given name." )
       .any();
@@ -162,7 +161,7 @@ public class AssemblyGenerator extends Generator
 
     branch = addSubTypeBlocks( branch, Reflection.loadClass( SubAssembly.class.getName() ), false, false, PIPE_FACTORY, true, Reflection.loadClass( Pipe.class.getName() ) ); // sub-assemblies
 
-    builder = branch
+    branch
       .addMethod( "completeBranch()" )
       .withDocumentation( "Complete the current branch and return the current tail." )
       .last( Pipe.class )
@@ -176,7 +175,7 @@ public class AssemblyGenerator extends Generator
 
     branch = addSubTypeBlocks( branch, Reflection.loadClass( SubAssembly.class.getName() ), false, true, PIPE_FACTORY, true, Reflection.loadClass( Pipe.class.getName() ) );
 
-    builder = branch.addMethod( "completeBranch()" )
+    branch.addMethod( "completeBranch()" )
       .withDocumentation( "Complete the current branch and return the current tail." )
       .last( Pipe.class )
       .endBlock(); // branch
@@ -201,11 +200,9 @@ public class AssemblyGenerator extends Generator
       .withDocumentation( "Continue a branch from the given pipe with the new given name." )
       .any();
 
-    builder = addPipeBranchBuilderType( builder, "CoGroup", Reflection.loadClass( CoGroup.class.getName() ), COGROUP, false, FACTORY );
-    builder = addPipeBranchBuilderType( builder, "HashJoin", Reflection.loadClass( HashJoin.class.getName() ), HASH_JOIN, false, FACTORY );
-    builder = addPipeBranchBuilderType( builder, "GroupByMerge", Reflection.loadClass( GroupBy.class.getName() ), GROUP_MERGE, true, FACTORY );
-    builder = addPipeBranchBuilderType( builder, "Merge", Reflection.loadClass( Merge.class.getName() ), MERGE, true, FACTORY );
-
-    return builder;
+    addPipeBranchBuilderType( builder, "CoGroup", Reflection.loadClass( CoGroup.class.getName() ), COGROUP, false, FACTORY );
+    addPipeBranchBuilderType( builder, "HashJoin", Reflection.loadClass( HashJoin.class.getName() ), HASH_JOIN, false, FACTORY );
+    addPipeBranchBuilderType( builder, "GroupByMerge", Reflection.loadClass( GroupBy.class.getName() ), GROUP_MERGE, true, FACTORY );
+    addPipeBranchBuilderType( builder, "Merge", Reflection.loadClass( Merge.class.getName() ), MERGE, true, FACTORY );
     }
   }
