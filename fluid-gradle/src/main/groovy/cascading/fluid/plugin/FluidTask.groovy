@@ -41,15 +41,26 @@ public class FluidTask extends DefaultTask {
     String outputSources;
 
     /**
-     * The list of package prefixes to scan for Cascading
-     * classes.
+     * The list of package prefixes to scan for
+     * Cascading classes.
      */
     String[] packages = [];
+
+    /**
+     * The package name to use as the base for
+     * generated classes.
+     */
+    String basePackage;
 
 
     @TaskAction
     void handle()
         {
+
+        // base package is required
+        if (isEmpty( basePackage )) {
+            throw new RuntimeException("base package cannot be empty")
+        }
 
         // default for sources directory
         if (isEmpty( inputSources )) {
@@ -71,7 +82,7 @@ public class FluidTask extends DefaultTask {
         args.add( 'cascading' )
         args.addAll( Arrays.asList( packages ));
 
-        def runner = new CustomRunner( inputSources, outputSources, "my.test" )
+        def runner = new CustomRunner( inputSources, outputSources, basePackage )
         def reflectionHelper = new Reflections( args.toArray( new Object[args.size()] ));
 
         try {
