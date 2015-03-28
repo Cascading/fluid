@@ -22,6 +22,7 @@ package cascading.fluid.generator.builder;
 
 import cascading.fluid.generator.javadocs.DocsHelper;
 import cascading.pipe.assembly.AggregateBy;
+import org.reflections.Reflections;
 import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder;
 
 public class SubAssembliesGenerator extends Generator
@@ -31,12 +32,13 @@ public class SubAssembliesGenerator extends Generator
     super( documentationHelper );
     }
 
-  public SubAssembliesGenerator( DocsHelper documentationHelper, String... packages )
+  public SubAssembliesGenerator( DocsHelper documentationHelper, Reflections reflections )
     {
-    super( documentationHelper, packages );
+    super( documentationHelper, reflections );
     }
 
-  public void createOperationBuilder( String targetPath )
+  @Override
+  protected DescriptorBuilder.Start<?> generateInternal( String targetPath )
     {
     DescriptorBuilder.Start<?> builder = getBuilder();
 
@@ -47,7 +49,7 @@ public class SubAssembliesGenerator extends Generator
       .setDescriptorName( "SubAssembly" )
       .setStartingMethodName( "build" );
 
-    completeAndWriteBuilder( targetPath, builder );
+    return builder;
     }
 
   }

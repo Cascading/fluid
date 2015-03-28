@@ -27,21 +27,35 @@ import cascading.operation.Filter;
 import cascading.operation.Function;
 import cascading.operation.GroupAssertion;
 import cascading.operation.ValueAssertion;
+import org.reflections.Reflections;
 import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder;
 
 public class OperationsGenerator extends Generator
   {
+  private String packageName = "cascading.fluid.internal.operation";
+
   public OperationsGenerator( DocsHelper documentationHelper )
     {
     super( documentationHelper );
     }
 
-  public OperationsGenerator( DocsHelper documentationHelper, String... packages )
+  public OperationsGenerator( DocsHelper documentationHelper, Reflections reflections )
     {
-    super( documentationHelper, packages );
+    super( documentationHelper, reflections );
     }
 
-  public void createOperationBuilder( String targetPath )
+  public String getPackageName()
+    {
+    return packageName;
+    }
+
+  public void setPackageName( String packageName )
+    {
+    this.packageName = packageName;
+    }
+
+  @Override
+  protected DescriptorBuilder.Start<?> generateInternal( String targetPath )
     {
     DescriptorBuilder.Start<?> builder = getBuilder();
 
@@ -53,11 +67,10 @@ public class OperationsGenerator extends Generator
     addBuilderBlock( builder, GroupAssertion.class, true, EVERY, FACTORY, true );
 
     builder
-      .setPackage( "cascading.fluid.internal.operation" )
+      .setPackage( packageName )
       .setDescriptorName( "Operation" )
       .setStartingMethodName( "build" );
 
-    completeAndWriteBuilder( targetPath, builder );
+    return builder;
     }
-
   }

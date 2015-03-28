@@ -18,26 +18,17 @@
  * limitations under the License.
  */
 
-package cascading.fluid.generator;
+apply plugin: 'groovy'
+apply plugin: 'maven'
 
-import cascading.fluid.generator.util.ClassLoaderRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+repositories {
+  mavenCentral()
+}
 
-public class Main
-  {
-  private static final Logger LOG = LoggerFactory.getLogger( Main.class );
+dependencies {
 
-  public static void main( String[] args )
-    {
-    String sourcePath = args[ 0 ];
-    String targetPath = args[ 1 ];
+  compile gradleApi()
+  compile localGroovy()
 
-    LOG.info( "using classloader: {}", args.length == 3 );
-
-    if( args.length == 3 )
-      ClassLoaderRunner.runViaClassLoader( args[ 2 ], CascadingRunner.class.getName(), sourcePath, targetPath );
-    else
-      new CascadingRunner( sourcePath, targetPath ).execute();
-    }
-  }
+  compile project( ':fluid-generator' )
+}

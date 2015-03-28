@@ -31,6 +31,7 @@ import cascading.pipe.HashJoin;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
+import org.reflections.Reflections;
 import unquietcode.tools.flapi.ClassReference;
 import unquietcode.tools.flapi.builder.Block.BlockBuilder;
 import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder;
@@ -42,12 +43,13 @@ public class AssemblyGenerator extends Generator
     super( documentationHelper );
     }
 
-  public AssemblyGenerator( DocsHelper documentationHelper, String... packages )
+  public AssemblyGenerator( DocsHelper documentationHelper, Reflections reflections )
     {
-    super( documentationHelper, packages );
+    super( documentationHelper, reflections );
     }
 
-  public void createAssemblyBuilder( String targetPath )
+  @Override
+  protected DescriptorBuilder.Start<?> generateInternal( String targetPath )
     {
     DescriptorBuilder.Start<?> builder = getBuilder();
 
@@ -60,7 +62,7 @@ public class AssemblyGenerator extends Generator
       .setDescriptorName( "Assembly" )
       .setStartingMethodName( "startAssembly" );
 
-    completeAndWriteBuilder( targetPath, builder );
+    return builder;
     }
 
   private void addBranchBlock( DescriptorBuilder.Start<?> builder )

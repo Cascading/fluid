@@ -19,6 +19,7 @@
  */
 
 include 'fluid-generator'
+include 'fluid-gradle'
 include 'fluid-api-runtime'
 include 'fluid-api'
 include 'fluid-cascading25'

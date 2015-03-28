@@ -20,6 +20,14 @@
 
 package cascading.fluid.generator.builder;
 
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import javax.annotation.Nullable;
+
 import cascading.fluid.generator.javadocs.DocsHelper;
 import cascading.fluid.generator.util.ParameterGraphs;
 import cascading.fluid.generator.util.StringClassPrefix;
@@ -45,25 +53,17 @@ import unquietcode.tools.flapi.Flapi;
 import unquietcode.tools.flapi.builder.Block.BlockBuilder;
 import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder;
 import unquietcode.tools.flapi.builder.Method.MethodBuilder;
+import unquietcode.tools.flapi.builder.Method.Sa255b39f2e2c8808a7291906605de632;
 import unquietcode.tools.flapi.generator.naming.HashedNameGenerator;
 import unquietcode.tools.flapi.runtime.MethodLogger;
-
-import javax.annotation.Nullable;
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 import static cascading.fluid.generator.util.ParameterGraphs.BEGIN;
 import static cascading.fluid.generator.util.ParameterGraphs.END;
 
-/**
- *
- */
+
 public abstract class Generator
   {
-  private static final Logger LOG = LoggerFactory.getLogger( Generator.class );
+  protected static final Logger LOG = LoggerFactory.getLogger( Generator.class );
 
   public static final String DEFAULT_PACKAGE = "cascading";
 
@@ -82,21 +82,22 @@ public abstract class Generator
   public static final int AGGREGATE_BY = 8;
 
   protected static MethodLogger methodLogger = MethodLogger.from( System.out );
-  protected static Reflections reflections;
 
-  boolean enableVarArgs = true; // only used if constructor parameter was declared with varargs
+  private boolean enableVarArgs = true; // only used if constructor parameter was declared with varargs
+  private boolean includeCascading = true; // include cascading types on the classpath
+
+  protected final Reflections reflections;
   protected final DocsHelper documentationHelper;
 
   protected Generator( DocsHelper documentationHelper )
     {
-    this.documentationHelper = documentationHelper;
-    reflections = new Reflections( DEFAULT_PACKAGE );
+    this(documentationHelper, new Reflections( DEFAULT_PACKAGE ));
     }
 
   protected Generator( DocsHelper documentationHelper, String... packages )
     {
     this.documentationHelper = documentationHelper;
-    reflections = new Reflections( (Object[]) packages );
+    this.reflections = Objects.requireNonNull(reflections);
     }
 
   public boolean isEnableVarArgs()
@@ -109,21 +110,34 @@ public abstract class Generator
     this.enableVarArgs = enableVarArgs;
     }
 
-  protected void completeAndWriteBuilder( String targetPath, DescriptorBuilder.Start<?> builder )
+  public boolean isIncludeCascading()
+    {
+    return includeCascading;
+    }
+
+  public void setIncludeCascading( boolean includeCascading )
+    {
+    this.includeCascading = includeCascading;
+    }
+
+  public void generate( String targetPath )
+    {
+    DescriptorBuilder.Start<?> builder = generateInternal( targetPath );
+    completeAndWriteBuilder( targetPath, builder );
+    }
+
+  protected abstract DescriptorBuilder.Start<?> generateInternal( String targetPath );
+
+  private void completeAndWriteBuilder( String targetPath, DescriptorBuilder.Start<?> builder )
     {
     Descriptor descriptor = builder
       .useCustomNameGenerator( new HashedNameGenerator() )
       .disableTimestamps()
       .build();
 
-    writeBuilder( targetPath, descriptor );
-    }
-
-  protected void writeBuilder( String targetPath, Descriptor build )
-    {
     new File( targetPath ).mkdirs();
 
-    build.writeToFolder( targetPath );
+    descriptor.writeToFolder( targetPath );
     }
 
   protected DescriptorBuilder.Start<?> getBuilder()
@@ -134,7 +148,7 @@ public abstract class Generator
     return Flapi.builder();
     }
 
-  protected <T> void addBuilderBlock( DescriptorBuilder.Start<?> builder, Class<T> type, final boolean isFactory, int group, String factoryClass, boolean allConstructors )
+  protected <T> void addBuilderBlock( DescriptorBuilder.Start<?> builder, Class<T> type, final boolean isFactory, Integer group, String factoryClass, boolean allConstructors )
     {
     String typeName = type.getSimpleName();
     String methodSignature = Text.toFirstLower( typeName ) + "()";
@@ -145,7 +159,7 @@ public abstract class Generator
     // lookup and attach docs
     documentationHelper.addDocumentation( tmp1, type, methodSignature );
 
-    BlockBuilder.Start<?> block = (BlockBuilder.Start<?>) ( isFactory ? tmp1.last() : tmp1.after( group ).last() );
+    BlockBuilder.Start<?> block = (BlockBuilder.Start<?>) ( isFactory || group == null ? tmp1.last() : tmp1.after( group ).last() );
 
     addSubTypeBlocks( block, type, isFactory, false, factoryClass, allConstructors )
       .endBlock();
@@ -154,9 +168,19 @@ public abstract class Generator
   protected <T> BlockBuilder.Start<?> addSubTypeBlocks( BlockBuilder.Start<?> block, Class<T> type, final boolean isFactory, boolean addReference, String factoryClass, boolean allConstructors, Class... startsWithExclusive )
     {
     Map<Class<? extends T>, Set<Constructor>> constructorMap = Types.getAllInstantiableSubTypes( reflections, type, allConstructors );
+    boolean atLeastOne = false;
 
     for( final Class<? extends T> subType : constructorMap.keySet() )
       {
+
+      // skip cascading classes if desired
+      if (!includeCascading && subType.getPackage().getName().startsWith( "cascading" ))
+        {
+        LOG.debug( "skipping cascading type '{}'", subType );
+        continue;
+        }
+
+      atLeastOne = true;
       Set<Constructor> constructors = constructorMap.get( subType );
 
       LOG.debug( "adding block {}: subtype: {}, constructors: {}", type.getSimpleName(), subType.getName(), constructors.size() );
@@ -167,10 +191,16 @@ public abstract class Generator
         block = addTypeBuilderMethod( block, isFactory, subType, constructors, factoryClass, startsWithExclusive );
       }
 
+    // TODO ideally we'd like to not generate the block at all
+    if ( !atLeastOne )
+      {
+        block.addMethod( "done()" ).last();
+      }
+
     return block;
     }
 
-  protected void addPipeBranchBuilderType( DescriptorBuilder.Start<?> builder, String operationName, Class<? extends Splice> splice, int groupID, boolean isMerge, String factoryClass )
+  protected void addPipeBranchBuilderType( DescriptorBuilder.Start<?> builder, String operationName, Class<? extends Splice> splice, Integer groupID, boolean isMerge, String factoryClass )
     {
     Set<Constructor> constructors;
 
@@ -182,7 +212,7 @@ public abstract class Generator
     addPipeTypeBuilderBlock( builder, splice, constructors, operationName, groupID, factoryClass );
     }
 
-  protected <T> void addPipeTypeBuilderBlock( DescriptorBuilder.Start<?> block, final Class<? extends T> type, Set<Constructor> constructors, String operationName, int groupID, String factoryClass, Class... startsWithExclusive )
+  protected <T> void addPipeTypeBuilderBlock( DescriptorBuilder.Start<?> block, final Class<? extends T> type, Set<Constructor> constructors, String operationName, Integer groupID, String factoryClass, Class... startsWithExclusive )
     {
     String startMethod = "start" + operationName + "()";
     String endMethod = "create" + operationName + "()";
@@ -198,7 +228,7 @@ public abstract class Generator
     LOG.debug( "to type: {}, adding methodName: {}", type.getName(), startMethod );
 
     // startBlock
-    BlockBuilder.Start<?> tmp = block
+    Sa255b39f2e2c8808a7291906605de632<?> tmp = block
       .startBlock( operationName, startMethod )
       .withDocumentation()
       .addContent( "Create a new " + type.getSimpleName() + " pipe to the current branch with the given groupFields.\n" )
@@ -208,8 +238,9 @@ public abstract class Generator
       .withParameter( "factory", new ClassReference( factoryClass ) )
       .withParameter( "creates", type )
       .withParameter( "method", startMethod )
-      .finish()
-      .any( groupID );
+      .finish();
+
+    BlockBuilder.Start<?> tmp = (BlockBuilder.Start<?>) (groupID != null ? method.any( groupID ) : method.any());
 
     BlockBuilder.Start<?> blockBuilder = generateBlock( tmp, true, type, endMethod, parameterGraph );
 
@@ -314,7 +345,7 @@ public abstract class Generator
 
       int outDegree = graph.outDegreeOf( vertex );
       boolean hasTerminalPath = Graphs.successorListOf( graph, vertex ).contains( END );
-      boolean isTerminal = outDegree == 1 && hasTerminalPath;
+      //boolean isTerminal = outDegree == 1 && hasTerminalPath;
 
       if( hasTerminalPath && isFactory )
         {
