@@ -153,6 +153,11 @@ public abstract class Generator
     String typeName = type.getSimpleName();
     String methodSignature = Text.toFirstLower( typeName ) + "()";
 
+    // skip when empty
+    if (!atLeastOne( type, allConstructors )) {
+      return;
+    }
+
     MethodBuilder.Start<?> tmp1 = builder
       .startBlock( typeName, methodSignature );
 
@@ -174,7 +179,7 @@ public abstract class Generator
       {
 
       // skip cascading classes if desired
-      if (!includeCascading && subType.getPackage().getName().startsWith( "cascading" ))
+      if (!includeCascading && subType.getPackage().getName().startsWith( DEFAULT_PACKAGE ))
         {
         LOG.debug( "skipping cascading type '{}'", subType );
         continue;
@@ -191,13 +196,33 @@ public abstract class Generator
         block = addTypeBuilderMethod( block, isFactory, subType, constructors, factoryClass, startsWithExclusive );
       }
 
-    // TODO ideally we'd like to not generate the block at all
+    // if this is reached we need to defend against empty blocks
+    // (so ideally don't call this method if there aren't any constructors)
     if ( !atLeastOne )
       {
-        block.addMethod( "done()" ).last();
+      block.addMethod( "done()" ).last();
       }
 
     return block;
+    }
+
+  protected <T> boolean atLeastOne( Class<T> type, boolean allConstructors )
+    {
+    Map<Class<? extends T>, Set<Constructor>> constructorMap = Types.getAllInstantiableSubTypes( reflections, type, allConstructors );
+
+    for( final Class<? extends T> subType : constructorMap.keySet() )
+      {
+
+      if (!includeCascading && subType.getPackage().getName().startsWith( DEFAULT_PACKAGE ))
+        {
+        LOG.debug( "skipping cascading type '{}'", subType );
+        continue;
+        }
+
+      return true;
+      }
+
+    return false;
     }
 
   protected void addPipeBranchBuilderType( DescriptorBuilder.Start<?> builder, String operationName, Class<? extends Splice> splice, Integer groupID, boolean isMerge, String factoryClass )
