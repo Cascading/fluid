@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import unquietcode.tools.flapi.builder.Method.MethodBuilder;
 
 /**
- *
+ * @author Ben Fagin
  */
 public class DocsHelper
   {

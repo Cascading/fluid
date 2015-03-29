@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * @author Ben Fagin
  */
 public class DocumentationScanner
   {
@@ -95,66 +95,44 @@ public class DocumentationScanner
     {
     final ByteArrayOutputStream os = new ByteArrayOutputStream();
 
-    switch( level )
-      {
-      case ERROR:
-        return new PrintWriter( os )
-        {
-        public
-        @Override
-        void flush()
-          {
-          super.flush();
-          LOG.error( os.toString() );
-          os.reset();
-          }
-        };
+        switch (level) {
+            case ERROR: return new PrintWriter(os) {
+                public @Override void flush() {
+                    super.flush();
+                    LOG.error(os.toString());
+                    os.reset();
+                }
+            };
 
-      case WARN:
-        return new PrintWriter( os )
-        {
-        public
-        @Override
-        void flush()
-          {
-          super.flush();
-          LOG.warn( os.toString() );
-          os.reset();
-          }
-        };
+            case WARN: return new PrintWriter(os) {
+                public @Override void flush() {
+                    super.flush();
+                    LOG.warn(os.toString());
+                    os.reset();
+                }
+            };
 
-      case INFO:
-        return new PrintWriter( os )
-        {
-        public
-        @Override
-        void flush()
-          {
-          super.flush();
-          LOG.info( os.toString() );
-          os.reset();
-          }
-        };
+            case INFO: return new PrintWriter(os) {
+                public @Override void flush() {
+                    super.flush();
+                    LOG.info(os.toString());
+                    os.reset();
+                }
+            };
 
-      case DEBUG:
-        return new PrintWriter( os )
-        {
-        public
-        @Override
-        void flush()
-          {
-          super.flush();
-          LOG.debug( os.toString() );
-          os.reset();
-          }
-        };
+            case DEBUG: return new PrintWriter(os) {
+                public @Override void flush() {
+                    super.flush();
+                    LOG.debug(os.toString());
+                    os.reset();
+                }
+            };
 
-      default:
-        throw new IllegalStateException( "invalid level" );
-      }
+            default: throw new IllegalStateException("invalid level");
+        }
     }
 
-  // ---------------------------------------------------- //
+    // ---------------------------------------------------- //
 
   public static class ScanningDoclet extends Doclet
     {
