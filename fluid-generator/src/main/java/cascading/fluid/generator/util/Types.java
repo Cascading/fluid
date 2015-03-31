@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -20,23 +20,19 @@
 
 package cascading.fluid.generator.util;
 
-import java.beans.ConstructorProperties;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Member;
-import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import javax.annotation.Nullable;
-
 import cascading.pipe.Pipe;
 import com.google.common.base.Predicate;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.beans.ConstructorProperties;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Member;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 import static com.google.common.base.Predicates.and;
 import static org.reflections.ReflectionUtils.getConstructors;
@@ -64,7 +60,7 @@ public class Types
 
     Set<Class<? extends T>> subTypes = reflections.getSubTypesOf( type );
 
-    LOG.info( "for type: {}, found {} sub-types", type.getName(), subTypes.size() );
+    LOG.debug( "for type: {}, found {} sub-types", type.getName(), subTypes.size() );
 
     for( Class<? extends T> subType : subTypes )
       {
@@ -78,7 +74,7 @@ public class Types
       if( constructors.isEmpty() )
         continue;
 
-      LOG.info( "found sub-type: {}, with {} ctors", subType.getName(), constructors.size() );
+      LOG.debug( "found sub-type: {}, with {} ctors", subType.getName(), constructors.size() );
 
       types.put( subType, constructors );
       }

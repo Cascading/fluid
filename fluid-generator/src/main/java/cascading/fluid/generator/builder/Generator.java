@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -20,8 +20,9 @@
 
 package cascading.fluid.generator.builder;
 
+import cascading.fluid.generator.javadocs.DocsHelper;
 import cascading.fluid.generator.util.ParameterGraphs;
-import cascading.fluid.generator.util.Prefix;
+import cascading.fluid.generator.util.StringClassPrefix;
 import cascading.fluid.generator.util.Text;
 import cascading.fluid.generator.util.Types;
 import cascading.pipe.Splice;
@@ -84,14 +85,17 @@ public abstract class Generator
   protected static Reflections reflections;
 
   boolean enableVarArgs = true; // only used if constructor parameter was declared with varargs
+  protected final DocsHelper documentationHelper;
 
-  protected Generator()
+  protected Generator( DocsHelper documentationHelper )
     {
+    this.documentationHelper = documentationHelper;
     reflections = new Reflections( DEFAULT_PACKAGE );
     }
 
-  protected Generator( String... packages )
+  protected Generator( DocsHelper documentationHelper, String... packages )
     {
+    this.documentationHelper = documentationHelper;
     reflections = new Reflections( (Object[]) packages );
     }
 
@@ -133,8 +137,13 @@ public abstract class Generator
   protected <T> void addBuilderBlock( DescriptorBuilder.Start<?> builder, Class<T> type, final boolean isFactory, int group, String factoryClass, boolean allConstructors )
     {
     String typeName = type.getSimpleName();
+    String methodSignature = Text.toFirstLower( typeName ) + "()";
+
     MethodBuilder.Start<?> tmp1 = builder
-      .startBlock( typeName, Text.toFirstLower( typeName ) + "()" );
+      .startBlock( typeName, methodSignature );
+
+    // lookup and attach docs
+    documentationHelper.addDocumentation( tmp1, type, methodSignature );
 
     BlockBuilder.Start<?> block = (BlockBuilder.Start<?>) ( isFactory ? tmp1.last() : tmp1.after( group ).last() );
 
@@ -150,7 +159,7 @@ public abstract class Generator
       {
       Set<Constructor> constructors = constructorMap.get( subType );
 
-      LOG.info( "adding block {}: subtype: {}, constructors: {}", type.getSimpleName(), subType.getName(), constructors.size() );
+      LOG.debug( "adding block {}: subtype: {}, constructors: {}", type.getSimpleName(), subType.getName(), constructors.size() );
 
       if( constructors.size() > 1 )
         block = addTypeBuilderBlock( block, isFactory, subType, constructors, addReference, factoryClass, startsWithExclusive );
@@ -178,15 +187,15 @@ public abstract class Generator
     String startMethod = "start" + operationName + "()";
     String endMethod = "create" + operationName + "()";
 
-    DirectedGraph<Prefix<String, String, Class>, Integer> parameterGraph = ParameterGraphs.createParameterGraph( constructors, true, startsWithExclusive );
+    DirectedGraph<StringClassPrefix, Integer> parameterGraph = ParameterGraphs.createParameterGraph( constructors, true, startsWithExclusive );
 
     if( parameterGraph.vertexSet().size() == 2 ) // has no parameters
       {
-      LOG.info( "on type: {}, skipping methodName: {}", type.getName(), endMethod );
+      LOG.debug( "on type: {}, skipping methodName: {}", type.getName(), endMethod );
       return;
       }
 
-    LOG.info( "to type: {}, adding methodName: {}", type.getName(), startMethod );
+    LOG.debug( "to type: {}, adding methodName: {}", type.getName(), startMethod );
 
     // startBlock
     BlockBuilder.Start<?> tmp = block
@@ -210,23 +219,26 @@ public abstract class Generator
 
   protected <T> BlockBuilder.Start<?> addTypeBuilderMethod( BlockBuilder.Start<?> block, final boolean isFactory, final Class<? extends T> type, Set<Constructor> constructors, String factoryClass, Class... startsWithExclusive )
     {
-    final DirectedGraph<Prefix<String, String, Class>, Integer> graph = ParameterGraphs.createParameterGraph( constructors, true, startsWithExclusive );
+    final DirectedGraph<StringClassPrefix, Integer> graph = ParameterGraphs.createParameterGraph( constructors, true, startsWithExclusive );
 
     final String operationName = type.getSimpleName();
     String methodName = ( isFactory ? operationName : Text.toFirstLower( operationName ) ); // Factory methods have upper first letter
+    String methodSignature = createMethodSignature( methodName, true, graph );
 
-    methodName = createMethodSignature( methodName, graph );
-
-    LOG.info( "to type: {}, adding methodName: {}, params: {}", type.getName(), methodName, graph.vertexSet().size() - 2 );
+    LOG.debug( "to type: {}, adding methodName: {}, params: {}", type.getName(), methodSignature, graph.vertexSet().size() - 2 );
 
     // method
     MethodBuilder.Start<?> tmp = block
-      .addMethod( methodName )
+      .addMethod( methodSignature )
       .addAnnotation( METHOD_ANNOTATION )
       .withParameter( "factory", new ClassReference( factoryClass ) )
       .withParameter( "creates", type )
-      .withParameter( "method", methodName )
+      .withParameter( "method", methodSignature )
       .finish();
+
+    // lookup and attach docs
+    String flatSignature = createMethodSignature( methodName, false, graph );
+    documentationHelper.addDocumentation( tmp, type, flatSignature );
 
     block = (BlockBuilder.Start<?>) ( isFactory ? tmp.last( type ) : tmp.any() ); // allow subsequent pipe elements
 
@@ -238,15 +250,15 @@ public abstract class Generator
     final String operationName = type.getSimpleName();
     String methodName = ( isFactory ? operationName : Text.toFirstLower( operationName ) ) + "()"; // Factory methods have upper first letter
 
-    DirectedGraph<Prefix<String, String, Class>, Integer> parameterGraph = ParameterGraphs.createParameterGraph( constructors, true, startsWithExclusive );
+    DirectedGraph<StringClassPrefix, Integer> parameterGraph = ParameterGraphs.createParameterGraph( constructors, true, startsWithExclusive );
 
     if( parameterGraph.vertexSet().size() == 2 ) // has no parameters
       {
-      LOG.info( "on type: {}, skipping methodName: {}", type.getName(), methodName );
+      LOG.debug( "on type: {}, skipping methodName: {}", type.getName(), methodName );
       return block;
       }
 
-    LOG.info( "to type: {}, adding methodName: {}", type.getName(), methodName );
+    LOG.debug( "to type: {}, adding methodName: {}", type.getName(), methodName );
 
     if( addReference )
       return block.addBlockReference( operationName, methodName ).any();
@@ -261,6 +273,7 @@ public abstract class Generator
       .finish();
 
     block = (BlockBuilder.Start<?>) ( isFactory ? tmp.last() : tmp.any() ); // allow subsequent pipe elements
+    documentationHelper.addDocumentation( tmp, type, methodName );
 
     BlockBuilder.Start<?> blockBuilder = generateBlock( block, isFactory, type, "end()", parameterGraph );
 
@@ -270,22 +283,22 @@ public abstract class Generator
     return block;
     }
 
-  private <T> BlockBuilder.Start<?> generateBlock( BlockBuilder.Start<?> block, final boolean isFactory, final Class<? extends T> type, final String endMethod, final DirectedGraph<Prefix<String, String, Class>, Integer> graph )
+  private <T> BlockBuilder.Start<?> generateBlock( BlockBuilder.Start<?> block, final boolean isFactory, final Class<? extends T> type, final String endMethod, final DirectedGraph<StringClassPrefix, Integer> graph )
     {
     final BlockBuilder.Start<?>[] blockBuilder = {
       block
     };
 
-    final FloydWarshallShortestPaths<Prefix<String, String, Class>, Integer> shortestPaths = new FloydWarshallShortestPaths<Prefix<String, String, Class>, Integer>( graph );
+    final FloydWarshallShortestPaths<StringClassPrefix, Integer> shortestPaths = new FloydWarshallShortestPaths<StringClassPrefix, Integer>( graph );
 
     ParameterGraphs.writeDOT( type.getName(), graph );
 
-    TraversalListenerAdapter<Prefix<String, String, Class>, Integer> listener = new TraversalListenerAdapter<Prefix<String, String, Class>, Integer>()
+    TraversalListenerAdapter<StringClassPrefix, Integer> listener = new TraversalListenerAdapter<StringClassPrefix, Integer>()
     {
     @Override
-    public void vertexTraversed( VertexTraversalEvent<Prefix<String, String, Class>> event )
+    public void vertexTraversed( VertexTraversalEvent<StringClassPrefix> event )
       {
-      Prefix<String, String, Class> vertex = event.getVertex();
+      StringClassPrefix vertex = event.getVertex();
 
       if( vertex == BEGIN || vertex == END )
         return;
@@ -297,7 +310,7 @@ public abstract class Generator
 
       String methodSignature = createMethodSignature( vertex );
 
-      LOG.info( "{} - opening property: {}, creating method: {}, group: {}, prior: {}", depth, vertex.getLhs(), methodSignature, depth, prior != null );
+      LOG.debug( "{} - opening property: {}, creating method: {}, group: {}, prior: {}", depth, vertex.getLhs(), methodSignature, depth, prior != null );
 
       int outDegree = graph.outDegreeOf( vertex );
       boolean hasTerminalPath = Graphs.successorListOf( graph, vertex ).contains( END );
@@ -327,21 +340,21 @@ public abstract class Generator
       }
 
     @Override
-    public void vertexFinished( VertexTraversalEvent<Prefix<String, String, Class>> event )
+    public void vertexFinished( VertexTraversalEvent<StringClassPrefix> event )
       {
-      Prefix<String, String, Class> vertex = event.getVertex();
+      StringClassPrefix vertex = event.getVertex();
 
       if( vertex == BEGIN || vertex == END )
         return;
 
-      LOG.info( "{} - closing property: {}", (int) shortestPaths.shortestDistance( BEGIN, vertex ), vertex.getLhs() );
+      LOG.debug( "{} - closing property: {}", (int) shortestPaths.shortestDistance( BEGIN, vertex ), vertex.getLhs() );
 
       blockBuilder[ 0 ] = (BlockBuilder.Start<?>) blockBuilder[ 0 ]
         .endBlock();
       }
     };
 
-    DepthFirstIterator<Prefix<String, String, Class>, Integer> iterator = new DepthFirstIterator<Prefix<String, String, Class>, Integer>( graph, BEGIN );
+    DepthFirstIterator<StringClassPrefix, Integer> iterator = new DepthFirstIterator<StringClassPrefix, Integer>( graph, BEGIN );
 
     iterator.addTraversalListener( listener );
 
@@ -351,21 +364,21 @@ public abstract class Generator
     return blockBuilder[ 0 ];
     }
 
-  private String createMethodSignature( String methodName, final DirectedGraph<Prefix<String, String, Class>, Integer> graph )
+  private String createMethodSignature( String methodName, final boolean includeParameterNames, final DirectedGraph<StringClassPrefix, Integer> graph )
     {
-    DepthFirstIterator<Prefix<String, String, Class>, Integer> iterator = new DepthFirstIterator<Prefix<String, String, Class>, Integer>( graph, BEGIN );
+    DepthFirstIterator<StringClassPrefix, Integer> iterator = new DepthFirstIterator<StringClassPrefix, Integer>( graph, BEGIN );
 
     String args = Joiner
       .on( "," )
       .skipNulls()
       .join(
-        Iterators.transform( iterator, new Function<Prefix<String, String, Class>, Object>()
+        Iterators.transform( iterator, new Function<StringClassPrefix, Object>()
         {
         boolean seenArrays = false;
 
         @Nullable
         @Override
-        public Object apply( @Nullable Prefix<String, String, Class> prefix )
+        public Object apply( @Nullable StringClassPrefix prefix )
           {
           if( prefix.getPair() == null ) // is BEGIN or END
             return null;
@@ -375,7 +388,7 @@ public abstract class Generator
 
           try
             {
-            return createMethodArg( prefix, isLast && !seenArrays );
+            return createMethodArg( prefix, includeParameterNames, isLast && !seenArrays );
             }
           finally
             {
@@ -388,24 +401,32 @@ public abstract class Generator
     return methodName + "(" + args + ")";
     }
 
-  private String createMethodSignature( Prefix<String, String, Class> pair )
+  private String createMethodSignature( StringClassPrefix pair )
     {
-    return pair.getLhs() + "(" + createMethodArg( pair, true ) + ")";
+    return pair.getLhs() + "(" + createMethodArg( pair, true, true ) + ")";
     }
 
-  private String createMethodArg( Prefix<String, String, Class> pair, boolean varArgsAllowed )
+  private String createMethodArg( StringClassPrefix pair, boolean includeParameterName, boolean varArgsAllowed )
     {
     String property = pair.getLhs();
     Class parameterType = pair.getRhs();
 
+    final boolean isVarArg = ( (Constructor) pair.getPayload( "constructor" ) ).isVarArgs();
+    final String typeName;
+
     if( !parameterType.isArray() )
-      return parameterType.getName() + " " + property;
-
-    boolean isVarArg = ( (Constructor) pair.getPayload( "constructor" ) ).isVarArgs();
-
-    if( isEnableVarArgs() && isVarArg && varArgsAllowed )
-      return parameterType.getComponentType().getName() + "... " + property;
+      {
+      typeName = parameterType.getName();
+      }
+    else if( isEnableVarArgs() && isVarArg && varArgsAllowed )
+      {
+      typeName = parameterType.getComponentType().getName() + "...";
+      }
     else
-      return parameterType.getComponentType().getName() + "[] " + property;
+      {
+      typeName = parameterType.getComponentType().getName() + "[]";
+      }
+
+    return includeParameterName ? typeName + " " + property : typeName;
     }
   }

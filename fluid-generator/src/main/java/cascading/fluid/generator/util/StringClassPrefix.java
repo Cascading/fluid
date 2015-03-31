@@ -18,25 +18,25 @@
  * limitations under the License.
  */
 
-cascadingVersion = "2.5.6"
+package cascading.fluid.generator.util;
 
-dependencies {
+/**
+ *
+ */
+public class StringClassPrefix extends Prefix<String, String, Class<?>>
+  {
+  public StringClassPrefix( String prefix )
+    {
+    super( prefix );
+    }
 
-  compile project( ':fluid-api-runtime' )
+  public StringClassPrefix( String prefix, String s, Class<?> clazz )
+    {
+    super( prefix, s, clazz );
+    }
 
-  compile group: 'cascading', name: 'cascading-core', version: cascadingVersion
-  compile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'sources'
-  compile group: 'cascading', name: 'cascading-xml', version: cascadingVersion
-
-}
-
-apply from: '../etc/shared-cascading.gradle'
-
-javadoc {
-  configure( options ) {
-
-    links << 'http://docs.cascading.org/cascading/2.5/javadoc/cascading-core/'
-
-    linksOffline( '../../../fluid-api', "http://${rootProject.s3UploadDocs.destination}javadoc/fluid-api".toString() )
+  public StringClassPrefix( String prefix, Pair<String, Class<?>> pair )
+    {
+    super( prefix, pair );
+    }
   }
-}

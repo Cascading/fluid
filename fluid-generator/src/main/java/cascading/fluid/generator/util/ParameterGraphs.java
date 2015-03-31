@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -20,15 +20,6 @@
 
 package cascading.fluid.generator.util;
 
-import java.beans.ConstructorProperties;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.google.common.base.Joiner;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.EdgeFactory;
@@ -40,6 +31,15 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.beans.ConstructorProperties;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  *
  */
@@ -47,14 +47,14 @@ public class ParameterGraphs
   {
   private static final Logger LOG = LoggerFactory.getLogger( ParameterGraphs.class );
 
-  public static final Prefix<String, String, Class> BEGIN = new Prefix<String, String, Class>( "BEGIN" );
-  public static final Prefix<String, String, Class> END = new Prefix<String, String, Class>( "END" );
+  public static final StringClassPrefix BEGIN = new StringClassPrefix( "BEGIN" );
+  public static final StringClassPrefix END = new StringClassPrefix( "END" );
 
-  public static DirectedGraph<Prefix<String, String, Class>, Integer> createParameterGraph( Set<Constructor> constructors, boolean trackPath, Class... startsWithExclusive )
+  public static DirectedGraph<StringClassPrefix, Integer> createParameterGraph( Set<Constructor> constructors, boolean trackPath, Class... startsWithExclusive )
     {
     Set<Class> after = new HashSet<Class>( Arrays.asList( startsWithExclusive ) );
 
-    DirectedGraph<Prefix<String, String, Class>, Integer> graph = newGraph();
+    DirectedGraph<StringClassPrefix, Integer> graph = newGraph();
 
     graph.addVertex( BEGIN );
     graph.addVertex( END );
@@ -72,9 +72,9 @@ public class ParameterGraphs
 
       foundConstructors.add( ctor );
 
-      LOG.info( "adding ctor: {}", ctor );
+      LOG.debug( "adding ctor: {}", ctor );
 
-      Prefix<String, String, Class> lastPair = BEGIN;
+      StringClassPrefix lastPair = BEGIN;
 
       String[] propertyArray = annotation.value();
       Class[] typeArray = constructor.getParameterTypes();
@@ -100,7 +100,7 @@ public class ParameterGraphs
           break;
 
         String hash = trackPath ? lastPair.getHash() : null;
-        Prefix<String, String, Class> pair = new Prefix<String, String, Class>( hash, property, parameterType );
+        StringClassPrefix pair = new StringClassPrefix( hash, property, parameterType );
 
         pair.addPayload( "constructor", constructor );
 
@@ -131,18 +131,18 @@ public class ParameterGraphs
     } );
     }
 
-  public static void writeDOT( String name, DirectedGraph<Prefix<String, String, Class>, Integer> graph )
+  public static void writeDOT( String name, DirectedGraph<StringClassPrefix, Integer> graph )
     {
     try
       {
       new File( "build/dot" ).mkdirs();
 
-      new DOTExporter<Prefix<String, String, Class>, Integer>(
-        new IntegerNameProvider<Prefix<String, String, Class>>(),
-        new VertexNameProvider<Prefix<String, String, Class>>()
+      new DOTExporter<StringClassPrefix, Integer>(
+        new IntegerNameProvider<StringClassPrefix>(),
+        new VertexNameProvider<StringClassPrefix>()
         {
         @Override
-        public String getVertexName( Prefix<String, String, Class> prefix )
+        public String getVertexName( StringClassPrefix prefix )
           {
           return prefix.print();
           }

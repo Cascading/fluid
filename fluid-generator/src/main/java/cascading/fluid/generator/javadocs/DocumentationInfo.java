@@ -18,25 +18,23 @@
  * limitations under the License.
  */
 
-cascadingVersion = "2.5.6"
+package cascading.fluid.generator.javadocs;
 
-dependencies {
+import java.util.HashMap;
+import java.util.Map;
 
-  compile project( ':fluid-api-runtime' )
+/**
+ *
+ */
+public class DocumentationInfo
+  {
+  public final String typeFQCN;
+  public final String docString;
+  public final Map<String, String> methodDocs = new HashMap<>();
 
-  compile group: 'cascading', name: 'cascading-core', version: cascadingVersion
-  compile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'sources'
-  compile group: 'cascading', name: 'cascading-xml', version: cascadingVersion
-
-}
-
-apply from: '../etc/shared-cascading.gradle'
-
-javadoc {
-  configure( options ) {
-
-    links << 'http://docs.cascading.org/cascading/2.5/javadoc/cascading-core/'
-
-    linksOffline( '../../../fluid-api', "http://${rootProject.s3UploadDocs.destination}javadoc/fluid-api".toString() )
+  public DocumentationInfo( String typeFQCN, String docString )
+    {
+    this.typeFQCN = typeFQCN;
+    this.docString = docString;
+    }
   }
-}

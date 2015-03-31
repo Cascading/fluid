@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -18,13 +18,66 @@
  * limitations under the License.
  */
 
+import java.nio.file.Files
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+
 evaluationDependsOn( ':fluid-generator' )
 
 def generatedSrc = "$buildDir/generated-src"
 
-task fluidGenerator() {
 
+def unzipToTemp( File jar )
+{
+  File folder = Files.createTempDirectory( "temp" ).toFile();
+  ZipInputStream zis = new ZipInputStream( new FileInputStream( jar ) );
+  ZipEntry ze = zis.getNextEntry();
+
+  while( ze != null )
+  {
+    String fileName = ze.getName();
+
+    File newFile = new File( folder, fileName );
+    newFile.getParentFile().mkdirs();
+
+    // only process files
+    if( !ze.isDirectory() )
+    {
+      int len;
+      byte[] buffer = new byte[1024];
+      FileOutputStream fos = new FileOutputStream( newFile );
+
+      while( ( len = zis.read( buffer ) ) > 0 )
+      {
+        fos.write( buffer, 0, len );
+      }
+
+      fos.close();
+    }
+
+    ze = zis.getNextEntry();
+  }
+
+  zis.closeEntry();
+  zis.close();
+  return folder
+}
+
+
+task fluidGenerator() {
   dependsOn << project( ':fluid-generator' ).classes
+
+  // set up source jar input
+  ext.sourcesDir = ""
+
+  file = project.configurations.runtime.find {
+    it.name.startsWith( "cascading-core" ) && it.name.endsWith( "-sources.jar" )
+  }
+
+  if( file != null )
+  {
+    ext.sourcesDir = unzipToTemp( file ).getPath()
+  }
 
   ext.outputDir = generatedSrc; // allows us to set a differing version of Cascading
   ext.include = sourceSets.main.compileClasspath;
@@ -38,7 +91,7 @@ task fluidGenerator() {
     javaexec {
       classpath = project( ':fluid-generator' ).sourceSets.main.runtimeClasspath
       main = 'cascading.fluid.generator.Main'
-      args = [outputDir, path]
+      args = [sourcesDir, outputDir, path]
     }
   }
 }

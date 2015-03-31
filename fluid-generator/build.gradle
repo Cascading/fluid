@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -27,7 +27,9 @@ dependencies {
   compile group: 'org.reflections', name: 'reflections', version: '0.9.9-RC2'
   compile group: 'org.javassist', name: 'javassist', version: '3.18.2-GA'
 
-  compile group: 'com.google.guava', name: 'guava', version: '17.0'
+  compile group: 'com.google.guava', name: 'guava', version: '18.0'
+
+  compile files( "${System.getenv( "JAVA_HOME" )}/lib/tools.jar" )
 
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -20,6 +20,7 @@
 
 package cascading.fluid.generator.builder;
 
+import cascading.fluid.generator.javadocs.DocsHelper;
 import cascading.operation.Aggregator;
 import cascading.operation.Buffer;
 import cascading.operation.Filter;
@@ -28,18 +29,16 @@ import cascading.operation.GroupAssertion;
 import cascading.operation.ValueAssertion;
 import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder;
 
-/**
- *
- */
 public class OperationsGenerator extends Generator
   {
-  public OperationsGenerator()
+  public OperationsGenerator( DocsHelper documentationHelper )
     {
+    super( documentationHelper );
     }
 
-  public OperationsGenerator( String... packages )
+  public OperationsGenerator( DocsHelper documentationHelper, String... packages )
     {
-    super( packages );
+    super( documentationHelper, packages );
     }
 
   public void createOperationBuilder( String targetPath )

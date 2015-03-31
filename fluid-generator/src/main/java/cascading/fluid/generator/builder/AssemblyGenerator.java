@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -20,6 +20,7 @@
 
 package cascading.fluid.generator.builder;
 
+import cascading.fluid.generator.javadocs.DocsHelper;
 import cascading.fluid.generator.util.Reflection;
 import cascading.pipe.Checkpoint;
 import cascading.pipe.CoGroup;
@@ -34,18 +35,16 @@ import unquietcode.tools.flapi.ClassReference;
 import unquietcode.tools.flapi.builder.Block.BlockBuilder;
 import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder;
 
-/**
- *
- */
 public class AssemblyGenerator extends Generator
   {
-  public AssemblyGenerator()
+  public AssemblyGenerator( DocsHelper documentationHelper )
     {
+    super( documentationHelper );
     }
 
-  public AssemblyGenerator( String... packages )
+  public AssemblyGenerator( DocsHelper documentationHelper, String... packages )
     {
-    super( packages );
+    super( documentationHelper, packages );
     }
 
   public void createAssemblyBuilder( String targetPath )

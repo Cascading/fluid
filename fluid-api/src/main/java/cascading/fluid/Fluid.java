@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -53,15 +53,15 @@ import cascading.tuple.Fields;
 
 /**
  * The Fluid class is the starting point for constructing new Pipe Assemblies via this API.
- * <p/>
+ * </p></p>
  * To get started, a new assembly builder must be created:
- * <p/>
+ * <p></p>
  * <pre>
  *   AssemblyBuilder.Start builder = Fluid.assembly();
  * </pre>
- * <p/>
+ * <p></p>
  * Next a branch must be started:
- * <p/>
+ * <p></p>
  * <pre>
  *  Pipe pipe = builder.startBranch( "rhs" )
  *    .groupBy( Fields.ALL )
@@ -71,23 +71,23 @@ import cascading.tuple.Fields;
  *       .coerce().coerceFields( Fields.fields( "foo", int.class ) ).end()
  *  .completeBranch();
  * </pre>
- * <p/>
+ * <p></p>
  * Note {@code completeBranch()} is a factory, it will return a {@link cascading.pipe.Pipe} instance. Also note
  * the assembly builder is stateful, and will keep the return Pipe as a known assembly tail.
- * <p/>
+ * <p></p>
  * {@link #fields(Comparable[])} is a convenience for {@code new Fields("...")}. Type Fields itself also has many fluent helper
  * methods, for example {@code Fluid.fields( "average").applyTypes(long.class);}
- * <p/>
+ * <p></p>
  * Calling:
- * <p/>
+ * <p></p>
  * <pre>
  *  Pipe[] tails = assembly.completeAssembly();
  * </pre>
  * Will return a {@code Pipe[]} with a single entry, the same called from the {@code completeBranch()} call
  * previously.
- * <p/>
+ * <p></p>
  * To begin a join, two or more pipes will need to be created prior to the next call:
- * <p/>
+ * </p></p>
  * <pre>
  *  Pipe lhsUpperLower = assembly
  *    .startHashJoin()
@@ -96,9 +96,9 @@ import cascading.tuple.Fields;
  *      .declaredFields( fields( "numLhs", "charLhs", "numUpperLower", "charUpperLower", "num2UpperLower", "char2UpperLower" ) )
  *    .createHashJoin();
  * </pre>
- * <p/>
+ * <p></p>
  * This is a factory and must be added to the assembly via:
- * <p/>
+ * <p></p>
  * <pre>
  * lhsUpperLower = assembly
  *  .continueBranch( lhsUpperLower )
@@ -109,19 +109,19 @@ import cascading.tuple.Fields;
  *    .outgoing( Fields.RESULTS )
  *  .completeBranch();
  * </pre>
- * <p/>
+ * <p></p>
  * If the two given pipes ({@code pipeLhs} and {@code pipeRhs}) were previously tails
  * in the assembly, they will be no longer tails within the assembly, replaced by the result of {@code completeBranch()}.
- * <p/>
+ * <p></p>
  * Finally notice in the above code, {@code function()} is used to create a new {@link cascading.operation.Function}
  * for use in the assembly.
- * <p/>
+ * <p></p>
  * In the first example at the top, {@code new Count()} was called. This call could have
  * been replaced with {@code function().Count().end()}.
- * <p/>
+ * <p></p>
  * AggregateBy sub-classes also have factory helpers than can be used when adding a base
  * {@link cascading.pipe.assembly.AggregateBy} to the pipe assembly.
- * <p/>
+ * <p></p>
  * <pre>
  * Pipe rhs = builder
  *  .startBranch( "rhs" )
@@ -149,7 +149,7 @@ public class Fluid
 
   /**
    * Method fields is a convenience helper factory for creating a new {@link cascading.tuple.Fields} instance.
-   * <p/>
+   * <p></p>
    * The Fields class is also fluent, so adding types to the result is as simple as calling
    * {@link Fields#applyTypes(java.lang.reflect.Type...)}.
    *
@@ -177,13 +177,13 @@ public class Fluid
 
   /**
    * Method assembly returns a new assembly builder.
-   * <p/>
+   * <p></p>
    * An assembly is a collection of branches.
-   * <p/>
+   * <p></p>
    * To add a new branch, call {@link cascading.fluid.api.assembly.Assembly.AssemblyBuilder.Start#startBranch(String)}.
-   * <p/>
+   * <p></p>
    * To complete the current branch, call {@code completeBranch()} on the builder.
-   * <p/>
+   * <p></p>
    * To complete the assembly, call  {@link cascading.fluid.api.assembly.Assembly.AssemblyBuilder.Start#completeAssembly()}.
    *
    * @return a new Assembly builder instance
@@ -210,10 +210,10 @@ public class Fluid
 
   /**
    * Method function returns a new {@link cascading.operation.Function} factory builder.
-   * <p/>
+   * <p></p>
    * Unlike the assembly builder, a Function factory builder provides a simple api for constructing
    * known Function types, that should ba added after an {@code each()} builder method is called.
-   * <p/>
+   * <p></p>
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
    * @return a new Function builder instance
@@ -227,10 +227,10 @@ public class Fluid
 
   /**
    * Method filter returns a new {@link cascading.operation.Filter} factory builder.
-   * <p/>
+   * <p></p>
    * Unlike the assembly builder, a Filter factory builder provides a simple api for constructing
    * known Filter types, that should ba added after an {@code each()} builder method is called.
-   * <p/>
+   * <p></p>
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
    * @return a new Filter builder instance
@@ -244,10 +244,10 @@ public class Fluid
 
   /**
    * Method aggregator returns a new {@link cascading.operation.Aggregator} factory builder.
-   * <p/>
+   * <p></p>
    * Unlike the assembly builder, a Aggregator factory builder provides a simple api for constructing
    * known Aggregator types, that should ba added after an {@code every()} builder method is called.
-   * <p/>
+   * <p></p>
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
    * @return a new Aggregator builder instance
@@ -261,10 +261,10 @@ public class Fluid
 
   /**
    * Method buffer returns a new {@link cascading.operation.Aggregator} factory builder.
-   * <p/>
+   * <p></p>
    * Unlike the assembly builder, a Buffer factory builder provides a simple api for constructing
    * known Buffer types, that should ba added after an {@code every()} builder method is called.
-   * <p/>
+   * <p></p>
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
    * @return a new Buffer builder instance
@@ -278,10 +278,10 @@ public class Fluid
 
   /**
    * Method valueAssertion returns a new {@link cascading.operation.ValueAssertion} factory builder.
-   * <p/>
+   * <p></p>
    * Unlike the assembly builder, a ValueAssertion factory builder provides a simple api for constructing
    * known ValueAssertion types, that should ba added after an {@code each()} builder method is called.
-   * <p/>
+   * <p></p>
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
    * @return a new ValueAssertion builder instance
@@ -295,10 +295,10 @@ public class Fluid
 
   /**
    * Method groupAssertion returns a new {@link cascading.operation.GroupAssertion} factory builder.
-   * <p/>
+   * <p></p>
    * Unlike the assembly builder, a GroupAssertion factory builder provides a simple api for constructing
    * known GroupAssertion types, that should ba added after an {@code every()} builder method is called.
-   * <p/>
+   * <p></p>
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
    * @return a new GroupAssertion builder instance
@@ -321,11 +321,11 @@ public class Fluid
 
   /**
    * Method aggregateBy returns a new {@link cascading.pipe.assembly.AggregateBy} factory builder.
-   * <p/>
+   * <p></p>
    * Unlike the assembly builder, an AggregateBy factory builder provides a simple api for constructing
    * known AggregateBy sub-types that should be passed to a parent {@link cascading.pipe.assembly.AggregateBy} for
    * concurrent aggregation of multiple values.
-   * <p/>
+   * <p></p>
    * Factory builders retain no internal state, and can be shared and re-used across assembly builders.
    *
    * @return a new AggregateBy builder instance
@@ -337,7 +337,7 @@ public class Fluid
     return simpleProxy( cascading.fluid.api.subassembly.AggregateBy.AggregateByBuilder.class, builder );
     }
 
-  @SuppressWarnings( "unchecked" )
+  @SuppressWarnings("unchecked")
   private static <T> T simpleProxy( final Class<?> proxyInterface, final Object target )
     {
     return (T) Proxy.newProxyInstance( Thread.currentThread().getContextClassLoader(), new Class[]{

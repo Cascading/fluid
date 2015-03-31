@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -20,6 +20,9 @@
 
 package cascading.fluid.generator.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -30,9 +33,6 @@ import java.net.URL;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  *
  */
@@ -40,7 +40,7 @@ public class ClassLoaderRunner
   {
   private static final Logger LOG = LoggerFactory.getLogger( ClassLoaderRunner.class );
 
-  public static void runViaClassLoader( String classpath, String className, String outputPath )
+  public static void runViaClassLoader( String classpath, String className, String sourcePath, String outputPath )
     {
     String[] paths = classpath.split( File.pathSeparator );
 
@@ -49,31 +49,31 @@ public class ClassLoaderRunner
     for( String path : paths )
       files.add( new File( path ) );
 
-    runViaClassLoader( files, className, outputPath );
+    runViaClassLoader( files, className, sourcePath, outputPath );
     }
 
-  public static void runViaClassLoader( Set<File> files, String className, String outputPath )
+  public static void runViaClassLoader( Set<File> files, String className, String sourcePath, String outputPath )
     {
-    runViaClassLoader( files, className, new File( outputPath ) );
+    runViaClassLoader( files, className, new File( sourcePath ), new File( outputPath ) );
     }
 
-  public static void runViaClassLoader( Set<File> files, String className, File outputPath )
+  public static void runViaClassLoader( Set<File> files, String className, File sourcePath, File outputPath )
     {
     URL[] urls = new URL[ files.size() ];
 
     int count = 0;
     for( File file : files )
       {
-      LOG.info( "classpath: {}", file );
+      LOG.debug( "classpath: {}", file );
       urls[ count++ ] = toURL( file.toURI() );
       }
 
     ChildFirstURLClassLoader urlClassLoader = new ChildFirstURLClassLoader( urls );
 
-    invoke( urlClassLoader, className, outputPath );
+    invoke( urlClassLoader, className, sourcePath, outputPath );
     }
 
-  private static void invoke( ChildFirstURLClassLoader urlClassLoader, String className, File outputPath )
+  private static void invoke( ChildFirstURLClassLoader urlClassLoader, String className, File sourcePath, File outputPath )
     {
     ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -83,9 +83,9 @@ public class ClassLoaderRunner
 
       Class<?> type = urlClassLoader.loadClass( className );
 
-      Constructor<?> constructor = type.getConstructor( File.class );
+      Constructor<?> constructor = type.getConstructor( File.class, File.class );
 
-      Object value = constructor.newInstance( outputPath );
+      Object value = constructor.newInstance( sourcePath, outputPath );
 
       Method method = type.getMethod( "execute" );
 

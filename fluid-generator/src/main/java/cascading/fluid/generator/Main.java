@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -20,56 +20,24 @@
 
 package cascading.fluid.generator;
 
-import java.io.File;
-
-import cascading.fluid.generator.builder.AssemblyGenerator;
-import cascading.fluid.generator.builder.OperationsGenerator;
-import cascading.fluid.generator.builder.SubAssembliesGenerator;
 import cascading.fluid.generator.util.ClassLoaderRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import unquietcode.tools.flapi.ExtractRuntime;
 
-/**
- *
- */
 public class Main
   {
   private static final Logger LOG = LoggerFactory.getLogger( Main.class );
 
-  private String outputPath;
-
   public static void main( String[] args )
     {
-    String targetPath = args[ 0 ];
+    String sourcePath = args[ 0 ];
+    String targetPath = args[ 1 ];
 
-    LOG.info( "using classloader: {}", args.length == 2 );
+    LOG.info( "using classloader: {}", args.length == 3 );
 
-    if( args.length == 2 )
-      ClassLoaderRunner.runViaClassLoader( args[ 1 ], Main.class.getName(), targetPath );
+    if( args.length == 3 )
+      ClassLoaderRunner.runViaClassLoader( args[ 2 ], Runner.class.getName(), sourcePath, targetPath );
     else
-      new Main( targetPath ).execute();
-    }
-
-  public Main( File outputPath )
-    {
-    this.outputPath = outputPath.toString();
-    }
-
-  public Main( String outputPath )
-    {
-    this.outputPath = outputPath;
-    }
-
-  public void execute()
-    {
-    if( outputPath == null )
-      throw new IllegalStateException( "outputPath is null" );
-
-    LOG.info( "generating api to: {}", outputPath );
-    new AssemblyGenerator().createAssemblyBuilder( outputPath );
-    new OperationsGenerator().createOperationBuilder( outputPath );
-    new SubAssembliesGenerator().createOperationBuilder( outputPath );
-    ExtractRuntime.writeRequiredSources( outputPath );
+      new Runner( sourcePath, targetPath ).execute();
     }
   }
