@@ -23,7 +23,7 @@ buildscript {
     maven { url 'http://repo.spring.io/plugins-release' }
   }
   dependencies {
-    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.5'
+    classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:2.2.1'
   }
 }
 
@@ -52,11 +52,7 @@ subprojects {
 
   apply plugin: 'java'
   apply plugin: 'maven'
-
-  apply plugin: 'propdeps'
-  apply plugin: 'propdeps-maven'
-  apply plugin: 'propdeps-idea'
-  apply plugin: 'propdeps-eclipse'
+  apply plugin: 'provided-base'
 
   sourceCompatibility = 1.7
   targetCompatibility = 1.7
@@ -146,7 +142,7 @@ task clean( type: Delete ) {
 }
 
 task wrapper( type: Wrapper ) {
-  gradleVersion = '1.12'
+  gradleVersion = '2.3'
 }
 
 task prepareRelease( type: Copy, dependsOn: ['fluid-api:build', 'fluid-api-runtime:build', 'fluid-cascading25:build', 'fluid-cascading26:build', 'fluid-cascading30:build'] ) {
