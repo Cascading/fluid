@@ -218,6 +218,7 @@ uploadShadow {
     pom.dependencies.removeAll { true }
   }
 }
+uploadArchives.dependsOn(uploadShadow)
 
 idea {
   module {
