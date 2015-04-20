@@ -21,8 +21,15 @@
 dependencies {
 
   provided project( ':fluid-cascading26' )
-
   compile project( ':fluid-api-runtime' )
+
+  provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
+  provided group: 'com.google.guava', name: 'guava', version: '18.0'
+  provided group: 'org.javassist', name: 'javassist', version: '3.18.2-GA'
+  provided group: 'org.reflections', name: 'reflections', version: '0.9.9'
+
+  provided group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
+  provided group: 'log4j', name: 'log4j', version: '1.2.16'
 
   testCompile group: 'cascading', name: 'cascading-local', version: cascadingVersion
   testCompile group: 'junit', name: 'junit', version: '4.11'

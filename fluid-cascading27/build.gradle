@@ -19,18 +19,20 @@
  */
 
 ext.cascadingVersion = "2.7.0"
+apply from: '../etc/shared-cascading.gradle'
 
 dependencies {
 
   compile project( ':fluid-api-runtime' )
+  shaded group: 'org.reflections', name: 'reflections', version: '0.9.9'
+  shaded group: 'org.javassist', name: 'javassist', version: '3.18.2-GA'
+  shaded group: 'com.google.guava', name: 'guava', version: '18.0'
 
   compile group: 'cascading', name: 'cascading-core', version: cascadingVersion
   compile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'sources'
   compile group: 'cascading', name: 'cascading-xml', version: cascadingVersion
 
 }
-
-apply from: '../etc/shared-cascading.gradle'
 
 javadoc {
   configure( options ) {

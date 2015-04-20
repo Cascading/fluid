@@ -22,13 +22,8 @@ dependencies {
 
   provided group: 'cascading', name: 'cascading-core', version: cascadingVersion
 
-  compile group: 'org.reflections', name: 'reflections', version: '0.9.9'
-  compile group: 'org.javassist', name: 'javassist', version: '3.18.2-GA'
-
-  compile group: 'com.google.guava', name: 'guava', version: '18.0'
-
-  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
-
-  runtime group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
-  runtime group: 'log4j', name: 'log4j', version: '1.2.16'
+  provided group: 'org.reflections', name: 'reflections', version: '0.9.9'
+  provided group: 'org.javassist', name: 'javassist', version: '3.18.2-GA'
+  provided group: 'com.google.guava', name: 'guava', version: '18.0'
+  provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
 }
