@@ -94,7 +94,7 @@ public abstract class Generator
     this(documentationHelper, new Reflections( DEFAULT_PACKAGE ));
     }
 
-  protected Generator( DocsHelper documentationHelper, String... packages )
+  protected Generator( DocsHelper documentationHelper, Reflections reflections )
     {
     this.documentationHelper = documentationHelper;
     this.reflections = Objects.requireNonNull(reflections);
@@ -253,7 +253,7 @@ public abstract class Generator
     LOG.debug( "to type: {}, adding methodName: {}", type.getName(), startMethod );
 
     // startBlock
-    Sa255b39f2e2c8808a7291906605de632<?> tmp = block
+    Sa255b39f2e2c8808a7291906605de632<?> method = block
       .startBlock( operationName, startMethod )
       .withDocumentation()
       .addContent( "Create a new " + type.getSimpleName() + " pipe to the current branch with the given groupFields.\n" )
