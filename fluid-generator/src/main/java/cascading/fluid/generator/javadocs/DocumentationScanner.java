@@ -23,6 +23,8 @@ package cascading.fluid.generator.javadocs;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintWriter;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,15 +50,18 @@ public class DocumentationScanner
     {
     collectedInfo.clear();
 
-    List<String> sourceFiles = getSourceFiles( sourceDir );
-    String[] filesArray = sourceFiles.toArray( new String[ sourceFiles.size() ] );
+    List<String> args = getSourceFiles( sourceDir );
+    args.add( 0, "-classpath" );
+    args.add( 1, classPath( Thread.currentThread().getContextClassLoader() ));
+
+    final String[] argsArray = args.toArray( new String[ args.size() ] );
 
     try
       {
       Main.execute(
         "Fluid Generator",
         writer( LogLevel.ERROR ), writer( LogLevel.WARN ), writer( LogLevel.DEBUG ),
-        ScanningDoclet.class.getName(), filesArray
+        ScanningDoclet.class.getName(), argsArray
       );
 
       return new ArrayList<>( collectedInfo );
@@ -171,5 +176,34 @@ public class DocumentationScanner
 
       return true;
       }
+    }
+
+  private static String classPath(ClassLoader loader)
+    {
+    if (!(loader instanceof URLClassLoader))
+      {
+      throw new RuntimeException( "invalid classloader provided" );
+      }
+
+    return classPath( (URLClassLoader) loader );
+    }
+
+  private static String classPath(URLClassLoader loader)
+    {
+    StringBuilder sb = new StringBuilder();
+    boolean first = true;
+
+    for( URL url : loader.getURLs() )
+      {
+        if (!first) {
+          sb.append( File.pathSeparatorChar );
+        } else {
+          first = false;
+        }
+
+        sb.append( url.toString() );
+      }
+
+    return sb.toString();
     }
   }

@@ -31,4 +31,5 @@ dependencies {
   compile localGroovy()
 
   compile project( ':fluid-generator' )
+  runtime group: 'cascading', name: 'cascading-core', version: '[2.+, 3.+]'
 }
