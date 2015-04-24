@@ -52,7 +52,7 @@ public class DocumentationScanner
 
     List<String> args = getSourceFiles( sourceDir );
     args.add( 0, "-classpath" );
-    args.add( 1, classPath( Thread.currentThread().getContextClassLoader() ));
+    args.add( 1, classPath() );
 
     final String[] argsArray = args.toArray( new String[ args.size() ] );
 
@@ -178,11 +178,14 @@ public class DocumentationScanner
       }
     }
 
-  private static String classPath(ClassLoader loader)
+  private static String classPath()
     {
+    final ClassLoader loader = Thread.currentThread().getContextClassLoader();
+
     if (!(loader instanceof URLClassLoader))
       {
-      throw new RuntimeException( "invalid classloader provided" );
+      LOG.debug( "unsupported classloader type '{}'", loader.getClass().getName() );
+      return "";
       }
 
     return classPath( (URLClassLoader) loader );
