@@ -17,9 +17,6 @@ public class FluidTask extends DefaultTask {
 
         // the full set of of classes depends on this task
         project.tasks.getByName( 'classes' ).dependsOn( this )
-
-        // register a new compilation task for this
-//        project.tasks.getByName( 'classes' ).dependsOn( new JavaT )
     }
 
     /**
@@ -52,6 +49,11 @@ public class FluidTask extends DefaultTask {
      */
     String basePackage;
 
+    /**
+     * Include cascading core classes.
+     */
+    boolean includeCascading = false;
+
 
     @TaskAction
     void handle()
@@ -82,8 +84,10 @@ public class FluidTask extends DefaultTask {
         args.add( 'cascading' )
         args.addAll( Arrays.asList( packages ));
 
-        def runner = new CustomRunner( inputSources, outputSources, basePackage )
         def reflectionHelper = new Reflections( args.toArray( new Object[args.size()] ));
+
+        def runner = new CustomRunner( inputSources, outputSources, basePackage )
+        runner.setIncludeCascading( includeCascading )
 
         try {
             runner.execute( reflectionHelper )
@@ -118,7 +122,7 @@ public class FluidTask extends DefaultTask {
         }
 
 	private static boolean isEmpty(String s)
-    {
-		return s == null || s.trim().isEmpty()
-	}
+        {
+        return s == null || s.trim().isEmpty()
+        }
 }
