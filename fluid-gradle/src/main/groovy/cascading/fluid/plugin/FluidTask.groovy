@@ -1,5 +1,6 @@
 package cascading.fluid.plugin
 
+import cascading.fluid.generator.CascadingRunner
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 import org.reflections.Reflections
@@ -86,8 +87,9 @@ public class FluidTask extends DefaultTask {
 
         def reflectionHelper = new Reflections( args.toArray( new Object[args.size()] ));
 
-        def runner = new CustomRunner( inputSources, outputSources, basePackage )
-        runner.setIncludeCascading( includeCascading )
+        def runner = includeCascading ?
+            new CascadingRunner( inputSources, outputSources )
+          : new CustomRunner( inputSources, outputSources, basePackage )
 
         try {
             runner.execute( reflectionHelper )

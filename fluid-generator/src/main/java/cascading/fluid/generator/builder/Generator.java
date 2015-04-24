@@ -120,6 +120,11 @@ public abstract class Generator
     this.includeCascading = includeCascading;
     }
 
+  public Generator includeCascading() {
+    setIncludeCascading( true );
+    return this;
+  }
+
   public void generate( String targetPath )
     {
     DescriptorBuilder.Start<?> builder = generateInternal( targetPath );

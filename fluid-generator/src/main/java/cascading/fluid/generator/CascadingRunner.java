@@ -31,9 +31,9 @@ public class CascadingRunner extends Runner
   protected List<Generator> generators( DocsHelper documentationHelper )
     {
     return Arrays.asList(
-      new AssemblyGenerator( documentationHelper ),
-      new OperationsGenerator( documentationHelper ),
-      new SubAssembliesGenerator( documentationHelper )
+      new AssemblyGenerator( documentationHelper ).includeCascading(),
+      new OperationsGenerator( documentationHelper ).includeCascading(),
+      new SubAssembliesGenerator( documentationHelper ).includeCascading()
     );
     }
 
@@ -41,9 +41,9 @@ public class CascadingRunner extends Runner
   protected List<Generator> generators( DocsHelper documentationHelper, Reflections reflectionHelper )
     {
     return Arrays.asList(
-      new AssemblyGenerator( documentationHelper, reflectionHelper ),
-      new OperationsGenerator( documentationHelper, reflectionHelper ),
-      new SubAssembliesGenerator( documentationHelper, reflectionHelper )
+      new AssemblyGenerator( documentationHelper, reflectionHelper ).includeCascading(),
+      new OperationsGenerator( documentationHelper, reflectionHelper ).includeCascading(),
+      new SubAssembliesGenerator( documentationHelper, reflectionHelper ).includeCascading()
     );
     }
   }

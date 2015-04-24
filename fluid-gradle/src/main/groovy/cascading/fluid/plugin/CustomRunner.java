@@ -18,7 +18,6 @@ import org.reflections.Reflections;
 public class CustomRunner extends Runner
   {
   private final String packageName;
-  private boolean includeCascading = false;
 
   public CustomRunner( File sourceDir, File outputDir, String packageName )
     {
@@ -38,21 +37,10 @@ public class CustomRunner extends Runner
     throw new UnsupportedOperationException( "not implemented" );
     }
 
-  public boolean isIncludeCascading()
-    {
-    return includeCascading;
-    }
-
-  public void setIncludeCascading( boolean includeCascading )
-    {
-    this.includeCascading = includeCascading;
-    }
-
   @Override
   protected List<Generator> generators( DocsHelper documentationHelper, Reflections reflectionHelper )
     {
     OperationsGenerator operationsGenerator = new OperationsGenerator( documentationHelper, reflectionHelper );
-    operationsGenerator.setIncludeCascading( includeCascading );
     operationsGenerator.setPackageName( packageName );
 
     return Arrays.<Generator>asList(
