@@ -38,14 +38,18 @@ import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder;
 
 public class AssemblyGenerator extends Generator
   {
+  private static final String DEFAULT_PACKAGE = "cascading.fluid.internal.assembly";
+
   public AssemblyGenerator( DocsHelper documentationHelper )
     {
     super( documentationHelper );
+    setPackageName( DEFAULT_PACKAGE );
     }
 
   public AssemblyGenerator( DocsHelper documentationHelper, Reflections reflections )
     {
     super( documentationHelper, reflections );
+    setPackageName( DEFAULT_PACKAGE );
     }
 
   @Override
@@ -58,7 +62,7 @@ public class AssemblyGenerator extends Generator
     builder.addMethod( "completeAssembly()" ).last( Pipe[].class ); // tails
 
     builder
-      .setPackage( "cascading.fluid.internal.assembly" )
+      .setPackage( getPackageName() )
       .setDescriptorName( "Assembly" )
       .setStartingMethodName( "startAssembly" );
 
