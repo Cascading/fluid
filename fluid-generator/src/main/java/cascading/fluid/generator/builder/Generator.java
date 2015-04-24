@@ -84,7 +84,8 @@ public abstract class Generator
   protected static MethodLogger methodLogger = MethodLogger.from( System.out );
 
   private boolean enableVarArgs = true; // only used if constructor parameter was declared with varargs
-  private boolean includeCascading = true; // include cascading types on the classpath
+  private boolean includeCascading = false; // include cascading types on the classpath
+  private String packageName = null;
 
   protected final Reflections reflections;
   protected final DocsHelper documentationHelper;
@@ -98,6 +99,16 @@ public abstract class Generator
     {
     this.documentationHelper = documentationHelper;
     this.reflections = Objects.requireNonNull(reflections);
+    }
+
+  public String getPackageName()
+    {
+    return packageName;
+    }
+
+  public void setPackageName( String packageName )
+    {
+    this.packageName = packageName;
     }
 
   public boolean isEnableVarArgs()
@@ -128,6 +139,13 @@ public abstract class Generator
   public void generate( String targetPath )
     {
     DescriptorBuilder.Start<?> builder = generateInternal( targetPath );
+
+    // skip empty
+    if (builder == null) {
+      LOG.info( "skipping this generator ({})", getClass() );
+      return;
+    }
+
     completeAndWriteBuilder( targetPath, builder );
     }
 
@@ -153,14 +171,14 @@ public abstract class Generator
     return Flapi.builder();
     }
 
-  protected <T> void addBuilderBlock( DescriptorBuilder.Start<?> builder, Class<T> type, final boolean isFactory, Integer group, String factoryClass, boolean allConstructors )
+  protected <T> boolean addBuilderBlock( DescriptorBuilder.Start<?> builder, Class<T> type, final boolean isFactory, Integer group, String factoryClass, boolean allConstructors )
     {
     String typeName = type.getSimpleName();
     String methodSignature = Text.toFirstLower( typeName ) + "()";
 
     // skip when empty
     if (!atLeastOne( type, allConstructors )) {
-      return;
+      return false;
     }
 
     MethodBuilder.Start<?> tmp1 = builder
@@ -173,6 +191,8 @@ public abstract class Generator
 
     addSubTypeBlocks( block, type, isFactory, false, factoryClass, allConstructors )
       .endBlock();
+
+    return true;
     }
 
   protected <T> BlockBuilder.Start<?> addSubTypeBlocks( BlockBuilder.Start<?> block, Class<T> type, final boolean isFactory, boolean addReference, String factoryClass, boolean allConstructors, Class... startsWithExclusive )

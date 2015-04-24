@@ -8,6 +8,7 @@ import java.util.Objects;
 import cascading.fluid.generator.Runner;
 import cascading.fluid.generator.builder.Generator;
 import cascading.fluid.generator.builder.OperationsGenerator;
+import cascading.fluid.generator.builder.SubAssembliesGenerator;
 import cascading.fluid.generator.javadocs.DocsHelper;
 import org.reflections.Reflections;
 
@@ -43,8 +44,12 @@ public class CustomRunner extends Runner
     OperationsGenerator operationsGenerator = new OperationsGenerator( documentationHelper, reflectionHelper );
     operationsGenerator.setPackageName( packageName );
 
+    SubAssembliesGenerator subAssembliesGenerator = new SubAssembliesGenerator( documentationHelper, reflectionHelper );
+    subAssembliesGenerator.setPackageName( packageName );
+
     return Arrays.<Generator>asList(
-        operationsGenerator
+        operationsGenerator,
+        subAssembliesGenerator
     );
 
     }

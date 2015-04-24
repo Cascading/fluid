@@ -27,25 +27,34 @@ import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder;
 
 public class SubAssembliesGenerator extends Generator
   {
+  private static final String DEFAULT_PACKAGE = "cascading.fluid.internal.subassembly";
+
   public SubAssembliesGenerator( DocsHelper documentationHelper )
     {
     super( documentationHelper );
+    setPackageName( DEFAULT_PACKAGE );
     }
 
   public SubAssembliesGenerator( DocsHelper documentationHelper, Reflections reflections )
     {
     super( documentationHelper, reflections );
+    setPackageName( DEFAULT_PACKAGE );
     }
 
   @Override
   protected DescriptorBuilder.Start<?> generateInternal( String targetPath )
     {
     DescriptorBuilder.Start<?> builder = getBuilder();
+    boolean atLeastOne = false;
 
-    addBuilderBlock( builder, AggregateBy.class, true, AGGREGATE_BY, FACTORY, false );
+    atLeastOne |= addBuilderBlock( builder, AggregateBy.class, true, AGGREGATE_BY, FACTORY, false );
+
+    if (!atLeastOne) {
+      return null;
+    }
 
     builder
-      .setPackage( "cascading.fluid.internal.subassembly" )
+      .setPackage( getPackageName() )
       .setDescriptorName( "SubAssembly" )
       .setStartingMethodName( "build" );
 

@@ -32,42 +32,39 @@ import unquietcode.tools.flapi.builder.Descriptor.DescriptorBuilder;
 
 public class OperationsGenerator extends Generator
   {
-  private String packageName = "cascading.fluid.internal.operation";
+  private static final String DEFAULT_PACKAGE = "cascading.fluid.internal.operation";
 
   public OperationsGenerator( DocsHelper documentationHelper )
     {
     super( documentationHelper );
+    setPackageName( DEFAULT_PACKAGE );
     }
 
   public OperationsGenerator( DocsHelper documentationHelper, Reflections reflections )
     {
     super( documentationHelper, reflections );
-    }
-
-  public String getPackageName()
-    {
-    return packageName;
-    }
-
-  public void setPackageName( String packageName )
-    {
-    this.packageName = packageName;
+    setPackageName( DEFAULT_PACKAGE );
     }
 
   @Override
   protected DescriptorBuilder.Start<?> generateInternal( String targetPath )
     {
     DescriptorBuilder.Start<?> builder = getBuilder();
+    boolean atLeastOne = false;
 
-    addBuilderBlock( builder, Function.class, true, EACH, FACTORY, true );
-    addBuilderBlock( builder, Filter.class, true, EACH, FACTORY, true );
-    addBuilderBlock( builder, Aggregator.class, true, EVERY, FACTORY, true );
-    addBuilderBlock( builder, Buffer.class, true, EVERY, FACTORY, true );
-    addBuilderBlock( builder, ValueAssertion.class, true, EACH, FACTORY, true );
-    addBuilderBlock( builder, GroupAssertion.class, true, EVERY, FACTORY, true );
+    atLeastOne |= addBuilderBlock( builder, Function.class, true, EACH, FACTORY, true );
+    atLeastOne |= addBuilderBlock( builder, Filter.class, true, EACH, FACTORY, true );
+    atLeastOne |= addBuilderBlock( builder, Aggregator.class, true, EVERY, FACTORY, true );
+    atLeastOne |= addBuilderBlock( builder, Buffer.class, true, EVERY, FACTORY, true );
+    atLeastOne |= addBuilderBlock( builder, ValueAssertion.class, true, EACH, FACTORY, true );
+    atLeastOne |= addBuilderBlock( builder, GroupAssertion.class, true, EVERY, FACTORY, true );
+
+    if (!atLeastOne) {
+      return null;
+    }
 
     builder
-      .setPackage( packageName )
+      .setPackage( getPackageName() )
       .setDescriptorName( "Operation" )
       .setStartingMethodName( "build" );
 
