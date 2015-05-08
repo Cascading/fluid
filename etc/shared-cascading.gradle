@@ -18,6 +18,9 @@
  * limitations under the License.
  */
 
+
+import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
+
 import java.nio.file.Files
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
@@ -35,7 +38,7 @@ buildscript {
     classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
   }
 }
-import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
+
 apply plugin: ShadowPlugin
 
 
@@ -87,13 +90,13 @@ task fluidGenerator() {
   // set up source jar input
   ext.sourcesDir = ""
 
-  file = project.configurations.runtime.find {
+  def jarFile = project.configurations.runtime.find {
     it.name.startsWith( "cascading-core" ) && it.name.endsWith( "-sources.jar" )
   }
 
-  if( file != null )
+  if( jarFile != null )
   {
-    ext.sourcesDir = unzipToTemp( file ).getPath()
+    ext.sourcesDir = unzipToTemp( jarFile ).getPath()
   }
 
   ext.outputDir = generatedSrc; // allows us to set a differing version of Cascading
