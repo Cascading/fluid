@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-cascadingVersion = "2.7.0-wip-2"
+cascadingVersion = "2.7.0"
 
 dependencies {
 
