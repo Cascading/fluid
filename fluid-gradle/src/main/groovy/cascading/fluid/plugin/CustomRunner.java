@@ -13,8 +13,6 @@ import cascading.fluid.generator.javadocs.DocsHelper;
 import org.reflections.Reflections;
 
 /**
- * @author Ben Fagin
- * @version 2015-03-27
  */
 public class CustomRunner extends Runner
   {

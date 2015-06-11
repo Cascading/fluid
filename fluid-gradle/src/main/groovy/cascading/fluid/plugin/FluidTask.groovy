@@ -6,8 +6,6 @@ import org.gradle.api.tasks.TaskAction
 import org.reflections.Reflections
 
 /**
- * @author Ben Fagin
- * @version 2015-03-23
  */
 public class FluidTask extends DefaultTask {
 
