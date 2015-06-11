@@ -47,9 +47,7 @@ public class SourceCompiler
     Map<String, DocumentationInfo> map = new HashMap<>();
 
     for( DocumentationInfo info : collectedInfo )
-      {
-      map.put( info.typeFQCN, info );
-      }
+	  map.put( info.typeFQCN, info );
 
     return map;
     }

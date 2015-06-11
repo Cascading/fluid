@@ -34,6 +34,8 @@ public class Main
     String targetPath = args[ 1 ];
 
     LOG.info( "using classloader: {}", args.length == 3 );
+    LOG.info( "using sourcePath: {}", sourcePath );
+    LOG.info( "using targetPath: {}", targetPath );
 
     if( args.length == 3 )
       ClassLoaderRunner.runViaClassLoader( args[ 2 ], CascadingRunner.class.getName(), sourcePath, targetPath );

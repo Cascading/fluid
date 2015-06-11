@@ -80,26 +80,23 @@ def unzipToTemp( File jar )
   return folder
 }
 
-
 task fluidGenerator() {
   dependsOn << project( ':fluid-generator' ).classes
 
   // set up source jar input
   ext.sourcesDir = ""
 
-  def jarFile = project.configurations.runtime.find {
-    it.name.startsWith( "cascading-core" ) && it.name.endsWith( "-sources.jar" )
-  }
-
-  if( jarFile != null )
-  {
-    ext.sourcesDir = unzipToTemp( jarFile ).getPath()
-  }
-
-  ext.outputDir = generatedSrc; // allows us to set a differing version of Cascading
-  ext.include = sourceSets.main.compileClasspath;
-
   doLast {
+
+    def jarFile = project.configurations.runtime.find {
+      it.name.startsWith( "cascading-core" ) && it.name.endsWith( "-sources.jar" )
+    }
+
+    if( jarFile != null )
+      ext.sourcesDir = unzipToTemp( jarFile ).getPath()
+
+    ext.outputDir = generatedSrc; // allows us to set a differing version of Cascading
+    ext.include = sourceSets.main.compileClasspath;
 
     def path = include.asPath
 
