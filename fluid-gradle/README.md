@@ -3,7 +3,7 @@
 This plugin provides functionality to scan for Cascading classes and generate
 fluent builders for them.
 
-To run, add the plugin to your geradle project like so:
+To run, add the plugin to your Gradle project like so:
 
 ```groovy
 buildscript {
