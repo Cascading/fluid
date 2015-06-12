@@ -7,6 +7,10 @@ To run, add the plugin to your Gradle project like so:
 
 ```groovy
 buildscript {
+  repositories {
+    maven {url 'http://conjars.org/repo/'}
+    maven {url = 'http://www.unquietcode.com/maven/releases'}
+  }
 	dependencies {
 		classpath('cascading:fluid-gradle:1.1.0')
 	}
