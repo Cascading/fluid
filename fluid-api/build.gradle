@@ -20,7 +20,7 @@
 
 dependencies {
 
-  provided project( ':fluid-cascading26' )
+  provided project( ':fluid-cascading30' )
   compile project( ':fluid-api-runtime' )
 
   provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
@@ -56,8 +56,8 @@ javadoc {
 
   configure( options ) {
 
-    links << 'http://docs.cascading.org/cascading/2.6/javadoc/cascading-core/'
+    links << 'http://docs.cascading.org/cascading/3.0/javadoc/cascading-core/'
 
-    linksOffline( '../../../fluid-cascading25', "http://${rootProject.s3UploadDocs.destination}javadoc/fluid-cascading25".toString() )
+    linksOffline( '../../../fluid-cascading30', "http://${rootProject.s3UploadDocs.destination}javadoc/fluid-cascading30".toString() )
   }
 }

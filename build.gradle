@@ -30,7 +30,7 @@ buildscript {
 apply from: 'etc/version.gradle'
 apply from: 'etc/s3Upload.gradle'
 
-ext.cascadingVersion = '2.6.3'
+ext.cascadingVersion = '3.0.0'
 ext.flapiVersion = '0.7.3'
 
 allprojects() {
@@ -65,6 +65,8 @@ subprojects {
 
     title = "Cascading Fluid ${releaseVersion}"
     destinationDir = file( "${distDir}/javadoc/${project.name}" )
+
+    failOnError = false
 
     configure( options ) {
       linkSource = true

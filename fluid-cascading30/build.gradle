@@ -37,7 +37,7 @@ dependencies {
 javadoc {
   configure( options ) {
 
-    links << 'http://docs.concurrentinc.com/cascading/3.0/javadoc/cascading-core/'
+    links << 'http://docs.cascading.org/cascading/3.0/javadoc/cascading-core/'
 
     linksOffline( '../../../fluid-api', "http://${rootProject.s3UploadDocs.destination}javadoc/fluid-api".toString() )
   }
