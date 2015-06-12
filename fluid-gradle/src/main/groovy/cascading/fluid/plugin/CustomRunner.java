@@ -46,9 +46,8 @@ public class CustomRunner extends Runner
     subAssembliesGenerator.setPackageName( packageName );
 
     return Arrays.<Generator>asList(
-        operationsGenerator,
-        subAssembliesGenerator
+      operationsGenerator,
+      subAssembliesGenerator
     );
-
     }
   }
