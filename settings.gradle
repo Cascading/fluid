@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2017 Chris K. Wensel. All Rights Reserved.
+ * Copyright (c) 2007-2017 Xplenty, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -19,12 +20,13 @@
  */
 
 include 'fluid-generator'
-include 'fluid-gradle'
 include 'fluid-api-runtime'
 include 'fluid-api'
 include 'fluid-cascading25'
 include 'fluid-cascading26'
 include 'fluid-cascading27'
 include 'fluid-cascading30'
+include 'fluid-cascading31'
+include 'fluid-cascading32'
 
 rootProject.name = 'fluid'

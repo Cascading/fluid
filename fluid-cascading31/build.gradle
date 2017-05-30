@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2017 Chris K. Wensel. All Rights Reserved.
- * Copyright (c) 2007-2017 Xplenty, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -19,7 +18,7 @@
  * limitations under the License.
  */
 
-ext.cascadingVersion = '3.0.4'
+ext.cascadingVersion = "3.1.2"
 apply from: '../etc/shared-cascading.gradle'
 
 dependencies {
@@ -31,6 +30,8 @@ dependencies {
 
   compile group: 'cascading', name: 'cascading-core', version: cascadingVersion
   compile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'sources'
+  compile group: 'cascading', name: 'cascading-expression', version: cascadingVersion
+  compile group: 'cascading', name: 'cascading-expression', version: cascadingVersion, classifier: 'sources'
   compile group: 'cascading', name: 'cascading-xml', version: cascadingVersion
 
 }
@@ -38,8 +39,9 @@ dependencies {
 javadoc {
   configure( options ) {
 
-    links << 'http://docs.cascading.org/cascading/3.0/javadoc/cascading-core/'
-    links << 'http://docs.cascading.org/cascading/3.0/javadoc/cascading-xml/'
+    links << 'http://docs.cascading.org/cascading/3.1/javadoc/cascading-core/'
+    links << 'http://docs.cascading.org/cascading/3.1/javadoc/cascading-expression/'
+    links << 'http://docs.cascading.org/cascading/3.1/javadoc/cascading-xml/'
 
     linksOffline( '../../../fluid-api', "http://${rootProject.s3UploadDocs.destination}javadoc/fluid-api".toString() )
   }

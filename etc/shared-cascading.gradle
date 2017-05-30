@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2017 Chris K. Wensel. All Rights Reserved.
+ * Copyright (c) 2007-2017 Xplenty, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -18,8 +19,6 @@
  * limitations under the License.
  */
 
-import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
-
 import java.nio.file.Files
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
@@ -29,16 +28,6 @@ configurations {
   shaded
   shadedArchives
 }
-
-buildscript {
-  repositories { jcenter() }
-
-  dependencies {
-    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
-  }
-}
-
-apply plugin: ShadowPlugin
 
 evaluationDependsOn( ':fluid-generator' )
 
@@ -131,7 +120,7 @@ shadowJar {
   classifier = ''
   baseName = "${project.name}-shaded"
 
-  from configurations.all.shaded
+  configurations = [project.configurations.shaded]
 
   mergeServiceFiles()
   relocate 'org.reflections', 'cascading.reflections'
@@ -176,8 +165,8 @@ task installShadedArchives( type: Upload ) {
     }
   }
 
-  installer.pom.whenConfigured { pom ->
-    pom.dependencies.removeAll { true }
+  installer.pom.whenConfigured {pom ->
+    pom.dependencies.removeAll {true}
   }
 }
 install.dependsOn( installShadedArchives )
@@ -212,8 +201,8 @@ uploadShadow {
     }
   }
 
-  deployer.pom.whenConfigured { pom ->
-    pom.dependencies.removeAll { true }
+  deployer.pom.whenConfigured {pom ->
+    pom.dependencies.removeAll {true}
   }
 }
 

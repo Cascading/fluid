@@ -62,7 +62,7 @@ Maven repository.
 
 Current release Java docs can be found here:
 
-  * http://docs.cascading.org/fluid/1.0/javadoc/fluid-api/
+  * http://docs.cascading.org/fluid/1.1/javadoc/fluid-api/
 
 Note that there is only one entry point, the `Fluid` class.
 
@@ -93,6 +93,8 @@ You can find the latest public releases here:
 *  http://conjars.org/cascading/fluid-cascading26
 *  http://conjars.org/cascading/fluid-cascading27
 *  http://conjars.org/cascading/fluid-cascading30
+*  http://conjars.org/cascading/fluid-cascading31
+*  http://conjars.org/cascading/fluid-cascading32
 
 Three dependencies must be added to the project settings.
 
@@ -149,7 +151,7 @@ Failing that, feel free to open an [issue](https://github.com/Cascading/fluid/is
 
 ## Developing
 
-Fluid currently requires Gradle 1.11 to build.
+Fluid currently requires at least Gradle 3.4 to build.
 
 Running:
 
@@ -170,10 +172,9 @@ WIP builds, if available, can generally be found on conjars.org, see above, or:
 
 Current wip Java docs can be found here:
 
-  * http://docs.concurrentinc.com/fluid/1.0/javadoc/fluid-api/
+  * http://docs.concurrentinc.com/fluid/1.1/javadoc/fluid-api/
 
 ## Notes
 
   * There currently are no builders for Tap or Scheme types
   * We plan to provide a gradle plugin for API generation in a future release
-  * [Driven](http://www.cascading.org/driven/) does support applications built in Fluid

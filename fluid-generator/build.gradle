@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2017 Chris K. Wensel. All Rights Reserved.
+ * Copyright (c) 2007-2017 Xplenty, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -21,6 +22,8 @@
 dependencies {
 
   provided group: 'cascading', name: 'cascading-core', version: cascadingVersion
+
+  compile group: 'org.jgrapht', name: 'jgrapht-ext', version: '0.9.2'
 
   compile group: 'unquietcode.tools.flapi', name: 'flapi', version: flapiVersion
 

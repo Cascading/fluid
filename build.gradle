@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2017 Xplenty, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -20,17 +20,19 @@
 
 buildscript {
   repositories {
-    maven { url 'http://repo.spring.io/plugins-release' }
+    maven {url 'http://repo.spring.io/plugins-release'}
+    jcenter()
   }
   dependencies {
     classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:2.2.1'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.0'
   }
 }
 
 apply from: 'etc/version.gradle'
 apply from: 'etc/s3Upload.gradle'
 
-ext.cascadingVersion = '3.0.0'
+ext.cascadingVersion = '3.0.4'
 ext.flapiVersion = '0.7.3'
 
 allprojects() {
@@ -41,8 +43,8 @@ allprojects() {
   repositories {
     mavenLocal()
     mavenCentral()
-    maven { url = 'http://conjars.org/repo/' }
-    maven { url = 'http://www.unquietcode.com/maven/releases' }
+    maven {url = 'http://conjars.org/repo/'}
+    maven {url = 'http://www.unquietcode.com/maven/releases'}
   }
 }
 
@@ -54,6 +56,8 @@ subprojects {
   apply plugin: 'maven'
   apply plugin: 'provided-base'
 
+  apply plugin: 'com.github.johnrengelman.shadow'
+
   sourceCompatibility = 1.7
   targetCompatibility = 1.7
 
@@ -61,7 +65,7 @@ subprojects {
   version = releaseVersion
 
   javadoc {
-    def copyright = '<i>Copyright &#169; 2007-2015 Concurrent, Inc. All Rights Reserved.</i>'
+    def copyright = '<i>Copyright &#169; 2007-2017 Xplenty, Inc. All Rights Reserved.</i>'
 
     title = "Cascading Fluid ${releaseVersion}"
     destinationDir = file( "${distDir}/javadoc/${project.name}" )
@@ -132,9 +136,9 @@ subprojects {
     }
     // make sure test dependencies come first, so that maven isn't getting
     // confused, when reading the generated pom
-    [install.repositories.mavenInstaller, deployer]*.pom*.whenConfigured { pom ->
-      def scopeOrder = [test: 1, runtime: 2, provided: 3, compile: 4].withDefault { 100 }
-      pom.dependencies = pom.dependencies.sort { scopeOrder[ it.scope ] }
+    [install.repositories.mavenInstaller, deployer]*.pom*.whenConfigured {pom ->
+      def scopeOrder = [test: 1, runtime: 2, provided: 3, compile: 4].withDefault {100}
+      pom.dependencies = pom.dependencies.sort {scopeOrder[ it.scope ]}
     }
   }
 }
@@ -143,11 +147,7 @@ task clean( type: Delete ) {
   delete "${rootDir}/build/"
 }
 
-task wrapper( type: Wrapper ) {
-  gradleVersion = '2.3'
-}
-
-task prepareRelease( type: Copy, dependsOn: ['fluid-api:build', 'fluid-api-runtime:build', 'fluid-cascading25:build', 'fluid-cascading26:build', 'fluid-cascading30:build'] ) {
+task prepareRelease( type: Copy, dependsOn: ['fluid-api:build', 'fluid-api-runtime:build', 'fluid-cascading25:build', 'fluid-cascading26:build', 'fluid-cascading27:build', 'fluid-cascading30:build', 'fluid-cascading31:build', 'fluid-cascading32:build'] ) {
 
   s3UploadDocs.dependsOn << prepareRelease
 
@@ -157,12 +157,12 @@ task prepareRelease( type: Copy, dependsOn: ['fluid-api:build', 'fluid-api-runti
   from "${distDir}/javadoc/"
   into "${s3UploadDocs.source}/javadoc/"
 
-  filter { line ->
+  filter {line ->
     line.replaceAll( "</body>", "${analytics}\n</body>" )
   }
 }
 
-prepareRelease << {
+prepareRelease.doLast {
   logger.info( 'built all artifacts' )
 }
 

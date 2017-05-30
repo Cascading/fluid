@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2017 Chris K. Wensel. All Rights Reserved.
+ * Copyright (c) 2007-2017 Xplenty, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -18,7 +19,7 @@
  * limitations under the License.
  */
 
-ext.cascadingVersion = "2.5.6"
+ext.cascadingVersion = '2.5.6'
 apply from: '../etc/shared-cascading.gradle'
 
 dependencies {
